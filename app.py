@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import folium
+from streamlit_folium import st_folium
 from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
@@ -183,6 +185,47 @@ def page_booking():
                     st.dataframe(display_df, use_container_width=True, hide_index=True)
                 else:
                     st.warning("Không tìm thấy bác sĩ phù hợp tại phòng khám này.")
+
+    # --- Bản đồ Folium (Task 3.2) ---
+    if 'user_coords' in st.session_state and 'clinic' in st.session_state:
+        st.markdown("---")
+        st.subheader("🗺️ Bản đồ vị trí")
+
+        u_lat, u_lon = st.session_state['user_coords']
+        clinic_data = st.session_state['clinic']
+
+        # Tạo bản đồ tại vị trí bệnh nhân
+        m = folium.Map(location=[u_lat, u_lon], zoom_start=13)
+
+        # Marker đỏ: Vị trí nhà bệnh nhân
+        folium.Marker(
+            location=[u_lat, u_lon],
+            popup="🏠 Nhà của bạn",
+            tooltip="Vị trí của bạn",
+            icon=folium.Icon(color='red', icon='home', prefix='fa')
+        ).add_to(m)
+
+        # Đọc tất cả phòng khám và cắm marker
+        all_clinics = pd.read_csv('clinics.csv')
+        for _, c in all_clinics.iterrows():
+            is_nearest = (c['id'] == clinic_data['id'])
+            color = 'green' if is_nearest else 'blue'
+            label = f"⭐ {c['name']} (GẦN NHẤT)" if is_nearest else c['name']
+
+            folium.Marker(
+                location=[c['lat'], c['lon']],
+                popup=f"{c['name']}\n{c['address']}",
+                tooltip=label,
+                icon=folium.Icon(color=color, icon='plus-sign')
+            ).add_to(m)
+
+        # Vẽ đường nối từ nhà đến phòng khám gần nhất
+        folium.PolyLine(
+            locations=[[u_lat, u_lon], [clinic_data['lat'], clinic_data['lon']]],
+            color='green', weight=3, opacity=0.7, dash_array='10'
+        ).add_to(m)
+
+        st_folium(m, width=None, height=400, use_container_width=True)
 
     # --- Phần 3: Chốt lịch ---
     if 'doctors' in st.session_state and not st.session_state['doctors'].empty:
