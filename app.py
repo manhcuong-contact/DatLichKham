@@ -1,100 +1,407 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from datetime import datetime
-from logic import find_nearest_clinic, find_doctors_by_symptom, get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS
-
-st.set_page_config(page_title="Đặt lịch khám", layout="centered")
-
-st.title("🏥 Hệ Thống Đặt Lịch Khám Bệnh")
-st.markdown("---")
+from logic import (find_nearest_clinic, find_doctors_by_symptom,
+                   get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
+from auth import register_user, login_user
 
 # =============================================================================
-# Phần 1: Nhập thông tin bệnh nhân
+# CẤU HÌNH TRANG
 # =============================================================================
-st.header("1. Thông tin của bạn")
-col_name, col_email = st.columns(2)
-with col_name:
-    patient_name = st.text_input("Họ và tên:")
-with col_email:
-    email = st.text_input("Email liên hệ (để nhận lịch):")
+st.set_page_config(page_title="Đặt lịch khám", page_icon="🏥", layout="wide")
 
-col1, col2 = st.columns(2)
-with col1:
-    user_lat = st.number_input("Vĩ độ nhà (Lat):", value=21.0245, format="%.4f")
-with col2:
-    user_lon = st.number_input("Kinh độ nhà (Lon):", value=105.8412, format="%.4f")
+# Khởi tạo session state
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+if 'user' not in st.session_state:
+    st.session_state['user'] = None
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'login'
+
 
 # =============================================================================
-# Phần 2: Nhập triệu chứng để tìm bác sĩ phù hợp
+# TRANG ĐĂNG NHẬP
 # =============================================================================
-st.header("2. Mô tả triệu chứng")
-symptom_input = st.text_input(
-    "Nhập triệu chứng của bạn:",
-    placeholder="Ví dụ: đau đầu, mệt mỏi, chóng mặt..."
-)
-
-# Nút tìm kiếm
-if st.button("🔍 Tìm phòng khám & Bác sĩ phù hợp"):
-    if not patient_name:
-        st.error("Vui lòng nhập Họ và tên!")
-    elif not email:
-        st.error("Vui lòng nhập Email!")
-    elif not symptom_input:
-        st.error("Vui lòng nhập triệu chứng!")
-    else:
-        # Tìm phòng khám gần nhất
-        clinic, dist = find_nearest_clinic(user_lat, user_lon)
-        st.session_state['clinic'] = clinic
-        st.session_state['patient_name'] = patient_name
-
-        st.success(f"📍 Phòng khám gần nhất: **{clinic['name']}** ({clinic['address']}) — Khoảng cách: {dist:.4f}")
-
-        # Tìm bác sĩ theo triệu chứng (Task 1.3)
-        matched_doctors = find_doctors_by_symptom(symptom_input, clinic['id'])
-        st.session_state['doctors'] = matched_doctors
-
-        if not matched_doctors.empty:
-            st.info(f"🩺 Tìm thấy **{len(matched_doctors)} bác sĩ** phù hợp với triệu chứng của bạn:")
-            # Hiển thị bảng bác sĩ phù hợp
-            display_df = matched_doctors[['id', 'name', 'specialty', 'match_count']].copy()
-            display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Số triệu chứng khớp']
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-        else:
-            st.warning("Không tìm thấy bác sĩ phù hợp với triệu chứng bạn mô tả tại phòng khám này.")
-
-# =============================================================================
-# Phần 3: Chốt lịch (Chỉ hiện khi đã tìm thấy bác sĩ)
-# =============================================================================
-if 'doctors' in st.session_state and not st.session_state['doctors'].empty:
+def page_login():
+    st.markdown("<h1 style='text-align: center;'>🏥 Hệ Thống Đặt Lịch Khám Bệnh</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: gray;'>Vui lòng đăng nhập để sử dụng hệ thống</p>", unsafe_allow_html=True)
     st.markdown("---")
-    st.header("3. Chọn lịch khám")
 
-    doctors_df = st.session_state['doctors']
+    col_left, col_center, col_right = st.columns([1, 2, 1])
+    with col_center:
+        tab_login, tab_register = st.tabs(["🔑 Đăng nhập", "📝 Đăng ký"])
 
-    # Hiển thị danh sách bác sĩ để chọn
-    doc_dict = dict(zip(doctors_df['id'], doctors_df.apply(lambda r: f"{r['name']} ({r['specialty']})", axis=1)))
-    selected_doc_id = st.selectbox("Chọn bác sĩ:", options=doc_dict.keys(), format_func=lambda x: doc_dict[x])
+        # --- TAB ĐĂNG NHẬP ---
+        with tab_login:
+            with st.form("login_form"):
+                st.subheader("Đăng nhập")
+                login_email = st.text_input("Email:", key="login_email")
+                login_password = st.text_input("Mật khẩu:", type="password", key="login_password")
+                submit_login = st.form_submit_button("Đăng nhập", use_container_width=True)
 
-    col3, col4 = st.columns(2)
+                if submit_login:
+                    if not login_email or not login_password:
+                        st.error("Vui lòng nhập đầy đủ Email và Mật khẩu!")
+                    else:
+                        success, user_data = login_user(login_email, login_password)
+                        if success:
+                            st.session_state['logged_in'] = True
+                            st.session_state['user'] = user_data
+                            st.success("Đăng nhập thành công!")
+                            st.rerun()
+                        else:
+                            st.error("Email hoặc mật khẩu không đúng!")
+
+            st.markdown("---")
+            st.info("**Tài khoản demo:**\n"
+                    "- Admin: `admin@hospital.com` / `admin123`\n"
+                    "- Bệnh nhân: `benhnhan@gmail.com` / `patient123`")
+
+        # --- TAB ĐĂNG KÝ ---
+        with tab_register:
+            with st.form("register_form"):
+                st.subheader("Tạo tài khoản mới")
+                reg_email = st.text_input("Email:", key="reg_email")
+                reg_password = st.text_input("Mật khẩu:", type="password", key="reg_password")
+                reg_password2 = st.text_input("Xác nhận mật khẩu:", type="password", key="reg_password2")
+                reg_address = st.text_input("Địa chỉ nhà:", placeholder="Ví dụ: 55 Nguyễn Trãi, Thanh Xuân, Hà Nội")
+                submit_register = st.form_submit_button("Đăng ký", use_container_width=True)
+
+                if submit_register:
+                    if not reg_email or not reg_password or not reg_address:
+                        st.error("Vui lòng nhập đầy đủ thông tin!")
+                    elif reg_password != reg_password2:
+                        st.error("Mật khẩu xác nhận không khớp!")
+                    elif len(reg_password) < 6:
+                        st.error("Mật khẩu phải có ít nhất 6 ký tự!")
+                    else:
+                        success, message = register_user(reg_email, reg_password, reg_address)
+                        if success:
+                            st.success(message)
+                        else:
+                            st.error(message)
+
+
+# =============================================================================
+# SIDEBAR — Hiển thị thông tin user và điều hướng
+# =============================================================================
+def render_sidebar():
+    user = st.session_state['user']
+    st.sidebar.markdown(f"### 👤 {user['email']}")
+    st.sidebar.markdown(f"**Vai trò:** {'🔴 Quản trị viên' if user['role'] == 'Admin' else '🟢 Bệnh nhân'}")
+    st.sidebar.markdown("---")
+
+    if user['role'] == 'Admin':
+        page = st.sidebar.radio("📋 Điều hướng:", ["📊 Bảng quản lý", "📅 Đặt lịch khám", "📜 Lịch sử đặt lịch"])
+    else:
+        page = st.sidebar.radio("📋 Điều hướng:", ["📅 Đặt lịch khám", "📜 Lịch sử đặt lịch"])
+
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🚪 Đăng xuất", use_container_width=True):
+        st.session_state['logged_in'] = False
+        st.session_state['user'] = None
+        st.session_state['page'] = 'login'
+        # Xóa các state liên quan đến booking
+        for key in ['clinic', 'doctors', 'patient_name']:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
+
+    return page
+
+
+# =============================================================================
+# TASK 2.3: GIAO DIỆN BỆNH NHÂN — ĐẶT LỊCH KHÁM
+# =============================================================================
+def page_booking():
+    user = st.session_state['user']
+    st.title("📅 Đặt Lịch Khám Bệnh")
+    st.markdown("---")
+
+    # --- Phần 1: Thông tin bệnh nhân ---
+    st.header("1. Thông tin của bạn")
+    col_name, col_email = st.columns(2)
+    with col_name:
+        patient_name = st.text_input("Họ và tên:", key="booking_name")
+    with col_email:
+        st.text_input("Email:", value=user['email'], disabled=True, key="booking_email")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        user_lat = st.number_input("Vĩ độ nhà (Lat):", value=21.0245, format="%.4f")
+    with col2:
+        user_lon = st.number_input("Kinh độ nhà (Lon):", value=105.8412, format="%.4f")
+
+    # --- Phần 2: Nhập triệu chứng ---
+    st.header("2. Mô tả triệu chứng")
+    symptom_input = st.text_input(
+        "Nhập triệu chứng của bạn:",
+        placeholder="Ví dụ: đau đầu, mệt mỏi, chóng mặt...",
+        key="booking_symptom"
+    )
+
+    if st.button("🔍 Tìm phòng khám & Bác sĩ phù hợp", key="btn_find"):
+        if not patient_name:
+            st.error("Vui lòng nhập Họ và tên!")
+        elif not symptom_input:
+            st.error("Vui lòng nhập triệu chứng!")
+        else:
+            clinic, dist = find_nearest_clinic(user_lat, user_lon)
+            st.session_state['clinic'] = clinic
+            st.session_state['patient_name'] = patient_name
+
+            st.success(f"📍 Phòng khám gần nhất: **{clinic['name']}** ({clinic['address']}) — Khoảng cách: {dist:.4f}")
+
+            matched_doctors = find_doctors_by_symptom(symptom_input, clinic['id'])
+            st.session_state['doctors'] = matched_doctors
+
+            if not matched_doctors.empty:
+                st.info(f"🩺 Tìm thấy **{len(matched_doctors)} bác sĩ** phù hợp:")
+                display_df = matched_doctors[['id', 'name', 'specialty', 'match_count']].copy()
+                display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Số triệu chứng khớp']
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.warning("Không tìm thấy bác sĩ phù hợp tại phòng khám này.")
+
+    # --- Phần 3: Chốt lịch ---
+    if 'doctors' in st.session_state and not st.session_state['doctors'].empty:
+        st.markdown("---")
+        st.header("3. Chọn lịch khám")
+
+        doctors_df = st.session_state['doctors']
+        doc_dict = dict(zip(doctors_df['id'], doctors_df.apply(lambda r: f"{r['name']} ({r['specialty']})", axis=1)))
+        selected_doc_id = st.selectbox("Chọn bác sĩ:", options=doc_dict.keys(), format_func=lambda x: doc_dict[x])
+
+        col3, col4 = st.columns(2)
+        with col3:
+            selected_date = st.date_input("Chọn ngày khám:").strftime("%Y-%m-%d")
+        with col4:
+            available_slots = get_available_slots(selected_doc_id, selected_date)
+            if available_slots:
+                selected_time = st.selectbox("Chọn khung giờ:", options=available_slots)
+            else:
+                st.warning("⚠️ Bác sĩ đã kín lịch trong ngày này!")
+                selected_time = None
+
+        if selected_time and st.button("✅ Xác nhận Đặt lịch", key="btn_book"):
+            p_name = st.session_state.get('patient_name', patient_name)
+            success, message, slots = book_appointment(p_name, user['email'], selected_doc_id, selected_date, selected_time)
+            if success:
+                st.success("🎉 " + message)
+                st.balloons()
+            else:
+                st.warning("⚠️ " + message)
+
+
+# =============================================================================
+# TASK 2.3: LỊCH SỬ ĐẶT LỊCH CỦA BỆNH NHÂN
+# =============================================================================
+def page_history():
+    user = st.session_state['user']
+    st.title("📜 Lịch Sử Đặt Lịch")
+    st.markdown("---")
+
+    appointments = pd.read_csv('appointments.csv')
+    doctors = pd.read_csv('doctors.csv')
+    clinics = pd.read_csv('clinics.csv')
+
+    # Lọc lịch hẹn của bệnh nhân hiện tại
+    my_appointments = appointments[appointments['patient_email'] == user['email']]
+
+    if my_appointments.empty:
+        st.info("Bạn chưa có lịch hẹn nào. Hãy đặt lịch khám ngay!")
+        return
+
+    # Join thông tin bác sĩ và phòng khám
+    merged = my_appointments.merge(doctors, left_on='doctor_id', right_on='id', suffixes=('', '_doc'))
+    merged = merged.merge(clinics, left_on='clinic_id', right_on='id', suffixes=('', '_clinic'))
+
+    # Hiển thị bảng lịch sử
+    display_df = merged[['id', 'patient_name', 'date', 'time_slot', 'name_doc', 'specialty', 'name_clinic', 'status']].copy()
+    display_df.columns = ['Mã lịch hẹn', 'Tên bệnh nhân', 'Ngày khám', 'Giờ khám', 'Bác sĩ', 'Chuyên khoa', 'Phòng khám', 'Trạng thái']
+
+    # Đánh màu trạng thái
+    def color_status(val):
+        if val == 'Active':
+            return 'background-color: #d4edda; color: #155724;'
+        elif val == 'Cancelled':
+            return 'background-color: #f8d7da; color: #721c24;'
+        elif val == 'Completed':
+            return 'background-color: #cce5ff; color: #004085;'
+        return ''
+
+    st.dataframe(
+        display_df.style.applymap(color_status, subset=['Trạng thái']),
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # Thống kê nhanh
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("📋 Tổng lịch hẹn", len(my_appointments))
+    with col2:
+        active_count = len(my_appointments[my_appointments['status'] == 'Active'])
+        st.metric("✅ Đang hoạt động", active_count)
     with col3:
-        selected_date = st.date_input("Chọn ngày khám:").strftime("%Y-%m-%d")
+        completed_count = len(my_appointments[my_appointments['status'] == 'Completed'])
+        st.metric("🏁 Đã khám xong", completed_count)
+
+
+# =============================================================================
+# TASK 2.4: ADMIN DASHBOARD
+# =============================================================================
+def page_admin_dashboard():
+    st.title("📊 Bảng Quản Lý — Admin Dashboard")
+    st.markdown("---")
+
+    appointments = pd.read_csv('appointments.csv')
+    doctors = pd.read_csv('doctors.csv')
+    clinics = pd.read_csv('clinics.csv')
+
+    # --- Thống kê tổng quan ---
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("📋 Tổng lịch hẹn", len(appointments))
+    with col2:
+        active = len(appointments[appointments['status'] == 'Active'])
+        st.metric("✅ Đang hoạt động", active)
+    with col3:
+        completed = len(appointments[appointments['status'] == 'Completed'])
+        st.metric("🏁 Đã khám xong", completed)
     with col4:
-        # Lấy danh sách khung giờ trống để hiển thị
-        available_slots = get_available_slots(selected_doc_id, selected_date)
-        if available_slots:
-            selected_time = st.selectbox("Chọn khung giờ:", options=available_slots)
-        else:
-            st.warning("⚠️ Bác sĩ đã kín lịch trong ngày này. Vui lòng chọn ngày khác.")
-            selected_time = None
+        cancelled = len(appointments[appointments['status'] == 'Cancelled'])
+        st.metric("❌ Đã hủy", cancelled)
 
-    if selected_time and st.button("✅ Xác nhận Đặt lịch"):
-        p_name = st.session_state.get('patient_name', patient_name)
-        success, message, slots = book_appointment(p_name, email, selected_doc_id, selected_date, selected_time)
-        if success:
-            st.success("🎉 " + message)
-            st.balloons()
-        else:
-            st.warning("⚠️ " + message)
+    st.markdown("---")
 
-elif 'doctors' in st.session_state and st.session_state['doctors'].empty:
-    st.warning("Không tìm thấy bác sĩ phù hợp với triệu chứng bạn mô tả tại phòng khám này.")
+    # --- Bảng danh sách tất cả lịch hẹn ---
+    st.subheader("📋 Danh sách toàn bộ lịch hẹn")
+
+    if appointments.empty:
+        st.info("Chưa có lịch hẹn nào trong hệ thống.")
+        return
+
+    # Join thông tin bác sĩ
+    merged = appointments.merge(doctors, left_on='doctor_id', right_on='id', suffixes=('', '_doc'))
+    merged = merged.merge(clinics, left_on='clinic_id', right_on='id', suffixes=('', '_clinic'))
+
+    display_cols = ['id', 'patient_name', 'patient_email', 'date', 'time_slot',
+                    'name_doc', 'specialty', 'name_clinic', 'status']
+    display_df = merged[display_cols].copy()
+    display_df.columns = ['Mã', 'Bệnh nhân', 'Email', 'Ngày', 'Giờ',
+                          'Bác sĩ', 'Chuyên khoa', 'Phòng khám', 'Trạng thái']
+
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+    # --- Nút hành động: Hủy lịch / Xác nhận đã khám ---
+    st.markdown("---")
+    st.subheader("⚙️ Cập nhật trạng thái lịch hẹn")
+
+    active_appointments = appointments[appointments['status'] == 'Active']
+    if active_appointments.empty:
+        st.info("Không có lịch hẹn nào đang hoạt động.")
+    else:
+        col_select, col_action = st.columns([3, 1])
+        with col_select:
+            # Tạo label hiển thị cho mỗi lịch hẹn
+            options_dict = {}
+            for _, row in active_appointments.iterrows():
+                doc_name = doctors[doctors['id'] == row['doctor_id']]['name'].values
+                doc_label = doc_name[0] if len(doc_name) > 0 else row['doctor_id']
+                label = f"{row['id']} | {row['patient_name']} | {doc_label} | {row['date']} {row['time_slot']}"
+                options_dict[row['id']] = label
+
+            selected_apt = st.selectbox(
+                "Chọn lịch hẹn cần cập nhật:",
+                options=options_dict.keys(),
+                format_func=lambda x: options_dict[x]
+            )
+
+        with col_action:
+            new_status = st.selectbox("Chuyển sang:", ["Completed", "Cancelled"])
+
+        if st.button("🔄 Cập nhật trạng thái", key="btn_update_status"):
+            # Đọc lại file CSV, cập nhật status, ghi lại toàn bộ
+            all_appointments = pd.read_csv('appointments.csv')
+            all_appointments.loc[all_appointments['id'] == selected_apt, 'status'] = new_status
+            all_appointments.to_csv('appointments.csv', index=False)
+
+            status_vn = "Đã khám xong" if new_status == "Completed" else "Đã hủy"
+            st.success(f"✅ Đã cập nhật lịch hẹn **{selected_apt}** → **{status_vn}**")
+            st.rerun()
+
+    # --- Biểu đồ thống kê ---
+    st.markdown("---")
+    st.subheader("📈 Biểu đồ thống kê")
+
+    chart_col1, chart_col2 = st.columns(2)
+
+    with chart_col1:
+        # Biểu đồ: Số lượng đặt lịch theo chuyên khoa
+        if not appointments.empty:
+            merged_chart = appointments.merge(doctors, left_on='doctor_id', right_on='id', suffixes=('', '_doc'))
+            specialty_counts = merged_chart['specialty'].value_counts().reset_index()
+            specialty_counts.columns = ['Chuyên khoa', 'Số lượng']
+
+            fig1 = px.bar(
+                specialty_counts,
+                x='Chuyên khoa',
+                y='Số lượng',
+                title='📊 Số lượng đặt lịch theo Chuyên khoa',
+                color='Chuyên khoa',
+                color_discrete_sequence=px.colors.qualitative.Set2
+            )
+            fig1.update_layout(showlegend=False)
+            st.plotly_chart(fig1, use_container_width=True)
+
+    with chart_col2:
+        # Biểu đồ: Số ca khám theo khung giờ trong ngày
+        if not appointments.empty:
+            timeslot_counts = appointments['time_slot'].value_counts().reset_index()
+            timeslot_counts.columns = ['Khung giờ', 'Số lượng']
+            timeslot_counts = timeslot_counts.sort_values('Khung giờ')
+
+            fig2 = px.bar(
+                timeslot_counts,
+                x='Khung giờ',
+                y='Số lượng',
+                title='🕐 Số ca khám theo Khung giờ',
+                color='Số lượng',
+                color_continuous_scale='Tealgrn'
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+
+    # Biểu đồ tròn: Tỷ lệ trạng thái
+    if not appointments.empty:
+        status_counts = appointments['status'].value_counts().reset_index()
+        status_counts.columns = ['Trạng thái', 'Số lượng']
+        fig3 = px.pie(
+            status_counts,
+            names='Trạng thái',
+            values='Số lượng',
+            title='📊 Tỷ lệ trạng thái lịch hẹn',
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        st.plotly_chart(fig3, use_container_width=True)
+
+
+# =============================================================================
+# ĐIỀU HƯỚNG CHÍNH (MAIN APP)
+# =============================================================================
+def main():
+    if not st.session_state['logged_in']:
+        page_login()
+    else:
+        selected_page = render_sidebar()
+
+        if selected_page == "📅 Đặt lịch khám":
+            page_booking()
+        elif selected_page == "📜 Lịch sử đặt lịch":
+            page_history()
+        elif selected_page == "📊 Bảng quản lý":
+            page_admin_dashboard()
+
+if __name__ == "__main__":
+    main()
