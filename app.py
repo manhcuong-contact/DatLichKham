@@ -9,6 +9,7 @@ from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
 from auth import register_user, login_user
 from geo_service import address_to_coords
+from ai_service import ai_triage_chat, rag_answer
 
 # =============================================================================
 # CẤU HÌNH TRANG
@@ -97,9 +98,9 @@ def render_sidebar():
     st.sidebar.markdown("---")
 
     if user['role'] == 'Admin':
-        page = st.sidebar.radio("📋 Điều hướng:", ["📊 Bảng quản lý", "📅 Đặt lịch khám", "📜 Lịch sử đặt lịch"])
+        page = st.sidebar.radio("📋 Điều hướng:", ["📊 Bảng quản lý", "📅 Đặt lịch khám", "📜 Lịch sử đặt lịch", "🤖 AI Lễ tân", "📚 Hỏi đáp AI"])
     else:
-        page = st.sidebar.radio("📋 Điều hướng:", ["📅 Đặt lịch khám", "📜 Lịch sử đặt lịch"])
+        page = st.sidebar.radio("📋 Điều hướng:", ["📅 Đặt lịch khám", "📜 Lịch sử đặt lịch", "🤖 AI Lễ tân", "📚 Hỏi đáp AI"])
 
     st.sidebar.markdown("---")
     if st.sidebar.button("🚪 Đăng xuất", use_container_width=True):
@@ -456,6 +457,135 @@ def page_admin_dashboard():
 
 
 # =============================================================================
+# TASK 4.1: AI LỄ TÂN CHATBOT
+# =============================================================================
+def page_ai_chatbot():
+    st.title("🤖 AI Lễ tân — Tư vấn triệu chứng")
+    st.caption("Mô tả triệu chứng của bạn, AI sẽ gợi ý chuyên khoa phù hợp.")
+    st.markdown("---")
+
+    # Khởi tạo lịch sử chat
+    if 'chat_messages' not in st.session_state:
+        st.session_state['chat_messages'] = [
+            {"role": "assistant", "content": "Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"}
+        ]
+    if 'chat_history_gemini' not in st.session_state:
+        st.session_state['chat_history_gemini'] = [
+            {"role": "user", "parts": ["Bạn là một AI lễ tân bệnh viện thông minh. Nhiệm vụ của bạn là lắng nghe mô tả triệu chứng của bệnh nhân, phân tích và xác định chuyên khoa phù hợp nhất. Trả lời bằng tiếng Việt, thân thiện. Cuối câu trả lời, luôn đính kèm JSON: {\"specialty\": \"Tên chuyên khoa\", \"symptoms\": \"triệu chứng\", \"urgency\": \"low/medium/high\"}"]},
+            {"role": "model", "parts": ["Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"]},
+        ]
+    if 'ai_specialty' not in st.session_state:
+        st.session_state['ai_specialty'] = None
+
+    # Hiển thị lịch sử chat
+    for msg in st.session_state['chat_messages']:
+        with st.chat_message(msg['role']):
+            st.markdown(msg['content'])
+
+    # Nhập tin nhắn mới
+    if user_input := st.chat_input("Đại loại bạn đang có triệu chứng gì?"):
+        # Hiển thị tin nhắn của user
+        st.session_state['chat_messages'].append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+        # Gọi AI Gemini
+        with st.chat_message("assistant"):
+            with st.spinner("🧠 AI đang phân tích..."):
+                ai_response, parsed_json = ai_triage_chat(
+                    user_input,
+                    chat_history=st.session_state['chat_history_gemini']
+                )
+            st.markdown(ai_response)
+
+        # Lưu vào lịch sử
+        st.session_state['chat_messages'].append({"role": "assistant", "content": ai_response})
+        st.session_state['chat_history_gemini'].append({"role": "user", "parts": [user_input]})
+        st.session_state['chat_history_gemini'].append({"role": "model", "parts": [ai_response]})
+
+        # Nếu AI đã xác định được chuyên khoa
+        if parsed_json and parsed_json.get('specialty') and parsed_json['specialty'] != 'Chưa xác định':
+            st.session_state['ai_specialty'] = parsed_json
+
+    # Hiển thị kết quả phân loại của AI (nếu đã có)
+    if st.session_state.get('ai_specialty'):
+        result = st.session_state['ai_specialty']
+        st.markdown("---")
+        st.subheader("🎯 Kết quả phân loại từ AI")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("🏥 Chuyên khoa", result.get('specialty', 'N/A'))
+        with col2:
+            st.metric("🩺 Triệu chứng", result.get('symptoms', 'N/A'))
+        with col3:
+            urgency = result.get('urgency', 'low')
+            urgency_label = {"low": "🟢 Thấp", "medium": "🟡 Trung bình", "high": "🔴 Cao"}
+            st.metric("⚠️ Mức độ khẩn cấp", urgency_label.get(urgency, urgency))
+
+        if st.button("📅 Đặt lịch khám theo kết quả AI", key="btn_ai_book"):
+            st.info(f"Hãy chuyển sang trang **📅 Đặt lịch khám** và nhập triệu chứng: **{result.get('symptoms', '')}** để hệ thống tự động tìm bác sĩ phù hợp!")
+
+    # Nút xóa lịch sử chat
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🗑️ Xóa lịch sử chat", key="btn_clear_chat"):
+        st.session_state['chat_messages'] = [
+            {"role": "assistant", "content": "Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"}
+        ]
+        st.session_state['chat_history_gemini'] = [
+            {"role": "user", "parts": ["Bạn là AI lễ tân bệnh viện."]},
+            {"role": "model", "parts": ["Xin chào! Tôi sẵn sàng giúp bạn."]},
+        ]
+        st.session_state['ai_specialty'] = None
+        st.rerun()
+
+
+# =============================================================================
+# TASK 4.2: RAG HỎI ĐÁP TÀI LIỆU BỆNH VIỆN
+# =============================================================================
+def page_rag_qa():
+    st.title("📚 Hỏi đáp AI — Tài liệu bệnh viện")
+    st.caption("Hỏi bất kỳ câu hỏi nào về bảng giá dịch vụ, chính sách BHYT, quy trình khám bệnh...")
+    st.markdown("---")
+
+    # Gợi ý câu hỏi mẫu
+    st.subheader("💡 Câu hỏi mẫu")
+    sample_cols = st.columns(3)
+    sample_questions = [
+        "Khám chuyên khoa giá bao nhiêu?",
+        "Thủ tục khám BHYT như thế nào?",
+        "Quy trình khám bệnh gồm những bước nào?"
+    ]
+    for i, q in enumerate(sample_questions):
+        with sample_cols[i]:
+            if st.button(q, key=f"sample_q_{i}", use_container_width=True):
+                st.session_state['rag_question'] = q
+
+    st.markdown("---")
+
+    # Ô nhập câu hỏi
+    default_q = st.session_state.get('rag_question', '')
+    question = st.text_input("❓ Nhập câu hỏi của bạn:", value=default_q, key="rag_input")
+
+    if st.button("🔍 Tìm câu trả lời", key="btn_rag") and question:
+        with st.spinner("🧠 AI đang tra cứu tài liệu..."):
+            answer, sources = rag_answer(question)
+
+        st.subheader("📝 Câu trả lời")
+        st.markdown(answer)
+
+        if sources:
+            st.markdown("---")
+            st.caption("📁 Nguồn tài liệu tham khảo:")
+            for src in sources:
+                st.caption(f"  • {src}")
+
+        # Xóa giá trị mặc định
+        if 'rag_question' in st.session_state:
+            del st.session_state['rag_question']
+
+
+# =============================================================================
 # ĐIỀU HƯỚNG CHÍNH (MAIN APP)
 # =============================================================================
 def main():
@@ -470,6 +600,10 @@ def main():
             page_history()
         elif selected_page == "📊 Bảng quản lý":
             page_admin_dashboard()
+        elif selected_page == "🤖 AI Lễ tân":
+            page_ai_chatbot()
+        elif selected_page == "📚 Hỏi đáp AI":
+            page_rag_qa()
 
 if __name__ == "__main__":
     main()
