@@ -1,0 +1,3 @@
+appointment_id,patient_email,doctor_id,date,time,status
+A001,testuser1@gmail.com,D01,2026-06-30,09:00,Confirmed
+A002,testuser2@gmail.com,D03,2026-06-30,14:30,Confirmed
