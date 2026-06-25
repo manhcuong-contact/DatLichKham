@@ -1,6 +1,6 @@
-clinic_id,name,x_coord,y_coord
-C01,Phòng khám Đa khoa Trung tâm,10,20
-C02,Phòng khám Tâm Anh,45,60
-C03,Phòng khám Sức Khỏe Vàng,80,15
-C04,Phòng khám Y tế Gia Đình,25,85
-C05,Phòng khám Quốc tế,60,40
+id,name,address,lat,lon
+C01,Phòng khám Đa khoa Trung tâm,120 Trần Hưng Đạo - Hoàn Kiếm - Hà Nội,21.0245,105.8412
+C02,Phòng khám Tâm Anh,108 Hoàng Như Tiếp - Long Biên - Hà Nội,21.0455,105.8745
+C03,Phòng khám Sức Khỏe Vàng,55 Nguyễn Trãi - Thanh Xuân - Hà Nội,20.9935,105.8000
+C04,Phòng khám Y tế Gia Đình,05 Trần Phú - Ba Đình - Hà Nội,21.0340,105.8350
+C05,Phòng khám Quốc tế,789 Giải Phóng - Hoàng Mai - Hà Nội,20.9810,105.8415

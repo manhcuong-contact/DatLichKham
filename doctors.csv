@@ -1,8 +1,11 @@
-doctor_id,name,specialty,clinic_id
-D01,BS. Nguyễn Văn An,Tim mạch,C01
-D02,BS. Trần Thị Bình,Da liễu,C01
-D03,BS. Lê Văn Cường,Nhi khoa,C02
-D04,BS. Phạm Thị Dung,Tim mạch,C03
-D05,BS. Hoàng Văn Em,Tai mũi họng,C04
-D06,BS. Vũ Thị Phương,Da liễu,C05
-D07,BS. Ngô Văn Giang,Nhi khoa,C05
+id,name,specialty,clinic_id,symptoms
+D01,BS. Nguyễn Văn An,Tim mạch,C01,đau ngực|khó thở|hồi hộp|tức ngực|tim đập nhanh|huyết áp cao
+D02,BS. Trần Thị Bình,Da liễu,C01,mẩn ngứa|nổi mụn|phát ban|dị ứng da|nấm da|rụng tóc
+D03,BS. Lê Văn Cường,Nhi khoa,C02,sốt cao|ho|sổ mũi|tiêu chảy|biếng ăn|quấy khóc
+D04,BS. Phạm Thị Dung,Tim mạch,C03,đau ngực|khó thở|chóng mặt|huyết áp cao|mệt mỏi|phù chân
+D05,BS. Hoàng Văn Em,Tai mũi họng,C04,đau họng|nghẹt mũi|ù tai|chảy máu mũi|khó nuốt|ho khan
+D06,BS. Vũ Thị Phương,Da liễu,C05,mẩn ngứa|chàm|vẩy nến|mụn trứng cá|sưng đỏ da|dị ứng da
+D07,BS. Ngô Văn Giang,Nhi khoa,C05,sốt cao|ho|nôn trớ|tiêu chảy|phát ban|khó thở
+D08,BS. Đặng Văn Hải,Nội tổng quát,C01,đau đầu|mệt mỏi|chóng mặt|đau bụng|buồn nôn|sốt nhẹ
+D09,BS. Lý Thị Inh,Nội tổng quát,C03,đau đầu|mất ngủ|đau lưng|đau bụng|sốt nhẹ|mệt mỏi
+D10,BS. Mai Văn Khoa,Tai mũi họng,C02,đau họng|viêm xoang|nghẹt mũi|ù tai|ho khan|khó thở
