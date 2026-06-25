@@ -5,6 +5,7 @@ from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
 from auth import register_user, login_user
+from geo_service import address_to_coords
 
 # =============================================================================
 # CẤU HÌNH TRANG
@@ -127,11 +128,18 @@ def page_booking():
     with col_email:
         st.text_input("Email:", value=user['email'], disabled=True, key="booking_email")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        user_lat = st.number_input("Vĩ độ nhà (Lat):", value=21.0245, format="%.4f")
-    with col2:
-        user_lon = st.number_input("Kinh độ nhà (Lon):", value=105.8412, format="%.4f")
+    # Nhập địa chỉ nhà → Geopy tự động chuyển thành tọa độ GPS
+    user_address = st.text_input(
+        "📍 Địa chỉ nhà của bạn:",
+        value=user.get('address', ''),
+        placeholder="Ví dụ: 55 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+        key="booking_address"
+    )
+
+    # Hiển thị tọa độ nếu đã geocode
+    if 'user_coords' in st.session_state:
+        lat, lon = st.session_state['user_coords']
+        st.caption(f"🌐 Tọa độ GPS: ({lat:.6f}, {lon:.6f})")
 
     # --- Phần 2: Nhập triệu chứng ---
     st.header("2. Mô tả triệu chứng")
@@ -144,25 +152,37 @@ def page_booking():
     if st.button("🔍 Tìm phòng khám & Bác sĩ phù hợp", key="btn_find"):
         if not patient_name:
             st.error("Vui lòng nhập Họ và tên!")
+        elif not user_address:
+            st.error("Vui lòng nhập địa chỉ nhà!")
         elif not symptom_input:
             st.error("Vui lòng nhập triệu chứng!")
         else:
-            clinic, dist = find_nearest_clinic(user_lat, user_lon)
-            st.session_state['clinic'] = clinic
-            st.session_state['patient_name'] = patient_name
+            # Chuyển đổi địa chỉ → tọa độ GPS bằng Geopy
+            with st.spinner("🔄 Đang xác định tọa độ từ địa chỉ..."):
+                lat, lon, geo_msg = address_to_coords(user_address)
 
-            st.success(f"📍 Phòng khám gần nhất: **{clinic['name']}** ({clinic['address']}) — Khoảng cách: {dist:.4f}")
-
-            matched_doctors = find_doctors_by_symptom(symptom_input, clinic['id'])
-            st.session_state['doctors'] = matched_doctors
-
-            if not matched_doctors.empty:
-                st.info(f"🩺 Tìm thấy **{len(matched_doctors)} bác sĩ** phù hợp:")
-                display_df = matched_doctors[['id', 'name', 'specialty', 'match_count']].copy()
-                display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Số triệu chứng khớp']
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            if lat is None:
+                st.error(f"❌ {geo_msg}")
             else:
-                st.warning("Không tìm thấy bác sĩ phù hợp tại phòng khám này.")
+                st.session_state['user_coords'] = (lat, lon)
+                st.caption(f"🌐 Đã xác định tọa độ: ({lat:.6f}, {lon:.6f}) — {geo_msg}")
+
+                clinic, dist = find_nearest_clinic(lat, lon)
+                st.session_state['clinic'] = clinic
+                st.session_state['patient_name'] = patient_name
+
+                st.success(f"📍 Phòng khám gần nhất: **{clinic['name']}** ({clinic['address']}) — Khoảng cách: {dist:.4f}")
+
+                matched_doctors = find_doctors_by_symptom(symptom_input, clinic['id'])
+                st.session_state['doctors'] = matched_doctors
+
+                if not matched_doctors.empty:
+                    st.info(f"🩺 Tìm thấy **{len(matched_doctors)} bác sĩ** phù hợp:")
+                    display_df = matched_doctors[['id', 'name', 'specialty', 'match_count']].copy()
+                    display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Số triệu chứng khớp']
+                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                else:
+                    st.warning("Không tìm thấy bác sĩ phù hợp tại phòng khám này.")
 
     # --- Phần 3: Chốt lịch ---
     if 'doctors' in st.session_state and not st.session_state['doctors'].empty:
