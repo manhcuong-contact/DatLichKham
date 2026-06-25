@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import folium
 from streamlit_folium import st_folium
+from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
@@ -316,7 +317,11 @@ def page_history():
 # TASK 2.4: ADMIN DASHBOARD
 # =============================================================================
 def page_admin_dashboard():
+    # Task 3.3: Tự động làm mới trang mỗi 10 giây để cập nhật trạng thái lịch hẹn
+    st_autorefresh(interval=10000, limit=None, key="admin_autorefresh")
+
     st.title("📊 Bảng Quản Lý — Admin Dashboard")
+    st.caption("⚡ Trang tự động cập nhật mỗi 10 giây")
     st.markdown("---")
 
     appointments = pd.read_csv('appointments.csv')
