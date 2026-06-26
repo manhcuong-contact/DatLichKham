@@ -85,7 +85,6 @@ def page_login():
             districts = locations.get(selected_province, ["Chưa có dữ liệu"])
             selected_district = st.selectbox("Quận / Huyện:", districts, key="reg_district")
             
-            reg_address = st.text_input("Địa chỉ chi tiết (Tùy chọn):", placeholder="Ví dụ: 55 Nguyễn Trãi")
             submit_register = st.button("Đăng ký", use_container_width=True)
 
             if submit_register:
@@ -96,8 +95,7 @@ def page_login():
                 elif len(reg_password) < 6:
                     st.error("Mật khẩu phải có ít nhất 6 ký tự!")
                 else:
-                    # Gộp địa chỉ chi tiết với Tỉnh, Huyện để lưu thành address chung (tuỳ chọn sử dụng sau này)
-                    full_address = f"{reg_address}, {selected_district}, {selected_province}" if reg_address else f"{selected_district}, {selected_province}"
+                    full_address = f"{selected_district}, {selected_province}"
                     
                     success, message = register_user(reg_email, reg_password, full_address, selected_province, selected_district)
                     if success:
@@ -171,9 +169,7 @@ def page_booking():
     idx_d = districts.index(default_district) if default_district in districts else 0
     booking_district = st.selectbox("Quận / Huyện:", districts, index=idx_d, key="booking_district")
     
-    booking_address_detail = st.text_input("Địa chỉ chi tiết (Số nhà, đường... - Tùy chọn):", key="booking_address_detail")
-    
-    user_address = f"{booking_address_detail}, {booking_district}, {booking_province}" if booking_address_detail else f"{booking_district}, {booking_province}"
+    user_address = f"{booking_district}, {booking_province}"
 
     # Hiển thị tọa độ nếu đã geocode
     if 'user_coords' in st.session_state:
