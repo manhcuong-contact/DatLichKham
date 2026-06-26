@@ -36,6 +36,11 @@ def page_login():
 
     col_left, col_center, col_right = st.columns([1, 2, 1])
     with col_center:
+        # Nếu vừa đăng ký thành công, hiển thị thông báo ở tab đăng nhập
+        if st.session_state.get('just_registered', False):
+            st.success("🎉 Đăng ký thành công! Vui lòng đăng nhập bằng tài khoản vừa tạo.")
+            st.session_state['just_registered'] = False
+
         tab_login, tab_register = st.tabs(["🔑 Đăng nhập", "📝 Đăng ký"])
 
         # --- TAB ĐĂNG NHẬP ---
@@ -84,7 +89,8 @@ def page_login():
                     else:
                         success, message = register_user(reg_email, reg_password, reg_address)
                         if success:
-                            st.success(message)
+                            st.session_state['just_registered'] = True
+                            st.rerun()
                         else:
                             st.error(message)
 
