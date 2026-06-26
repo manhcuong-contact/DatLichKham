@@ -1,4 +1,5 @@
 import pandas as pd
+from config import get_data_path
 import math
 from datetime import datetime, timedelta
 
@@ -22,7 +23,7 @@ def find_nearest_clinic(user_lat, user_lon):
     Tính khoảng cách Euclid đến tất cả phòng khám.
     Trả về phòng khám gần nhất và khoảng cách.
     """
-    clinics = pd.read_csv('clinics.csv')
+    clinics = pd.read_csv(get_data_path('clinics.csv'))
     nearest_clinic = None
     min_distance = float('inf')
 
@@ -45,7 +46,7 @@ def find_doctors_by_symptom(symptom_text, clinic_id):
     bác sĩ có triệu chứng khớp, chỉ lấy bác sĩ tại phòng khám đã chọn.
     Trả về DataFrame các bác sĩ phù hợp kèm số triệu chứng khớp.
     """
-    doctors = pd.read_csv('doctors.csv')
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
 
     # Lọc bác sĩ thuộc phòng khám gần nhất
     clinic_doctors = doctors[doctors['clinic_id'] == clinic_id].copy()
@@ -81,7 +82,7 @@ def find_doctors_by_symptom(symptom_text, clinic_id):
 # Hàm phụ: Lọc bác sĩ theo chuyên khoa (giữ lại để tương thích)
 def get_doctors(clinic_id, specialty):
     """Lọc bác sĩ theo chuyên khoa tại phòng khám đã chọn."""
-    doctors = pd.read_csv('doctors.csv')
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
     suitable_doctors = doctors[(doctors['clinic_id'] == clinic_id) & (doctors['specialty'] == specialty)]
     return suitable_doctors
 
@@ -93,7 +94,7 @@ def get_available_slots(doctor_id, date):
     Trả về danh sách các khung giờ còn trống của bác sĩ trong ngày.
     So sánh toàn bộ ALL_TIME_SLOTS với các lịch hẹn Active đã tồn tại.
     """
-    appointments = pd.read_csv('appointments.csv')
+    appointments = pd.read_csv(get_data_path('appointments.csv'))
 
     # Lọc các lịch hẹn Active của bác sĩ này trong ngày đó
     booked = appointments[
@@ -114,8 +115,8 @@ def book_appointment(patient_name, email, doctor_id, date, time_slot):
     - Nếu trùng: Trả về danh sách TẤT CẢ khung giờ còn trống trong ngày.
     - Nếu không trùng: Ghi lịch hẹn mới vào CSV và gửi email xác nhận.
     """
-    appointments = pd.read_csv('appointments.csv')
-    doctors = pd.read_csv('doctors.csv')
+    appointments = pd.read_csv(get_data_path('appointments.csv'))
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
 
     # Truy xuất tên bác sĩ để đưa vào nội dung email
     doctor_info = doctors[doctors['id'] == doctor_id]
@@ -152,11 +153,11 @@ def book_appointment(patient_name, email, doctor_id, date, time_slot):
 
     # Ghi nối dữ liệu mới vào file appointments.csv
     # Đảm bảo file có dấu xuống dòng ở cuối trước khi append
-    with open('appointments.csv', 'r+') as f:
+    with open(get_data_path('appointments.csv'), 'r+') as f:
         content = f.read()
         if content and not content.endswith('\n'):
             f.write('\n')
-    new_appointment.to_csv('appointments.csv', mode='a', header=False, index=False)
+    new_appointment.to_csv(get_data_path('appointments.csv'), mode='a', header=False, index=False)
 
     # Gửi email xác nhận tự động
     send_confirmation_email(email, doctor_name, date, time_slot)

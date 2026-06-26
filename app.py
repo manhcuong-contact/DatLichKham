@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from config import get_data_path
 import plotly.express as px
 import folium
 from streamlit_folium import st_folium
@@ -208,7 +209,7 @@ def page_booking():
         ).add_to(m)
 
         # Đọc tất cả phòng khám và cắm marker
-        all_clinics = pd.read_csv('clinics.csv')
+        all_clinics = pd.read_csv(get_data_path('clinics.csv'))
         for _, c in all_clinics.iterrows():
             is_nearest = (c['id'] == clinic_data['id'])
             color = 'green' if is_nearest else 'blue'
@@ -267,9 +268,9 @@ def page_history():
     st.title("📜 Lịch Sử Đặt Lịch")
     st.markdown("---")
 
-    appointments = pd.read_csv('appointments.csv')
-    doctors = pd.read_csv('doctors.csv')
-    clinics = pd.read_csv('clinics.csv')
+    appointments = pd.read_csv(get_data_path('appointments.csv'))
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
+    clinics = pd.read_csv(get_data_path('clinics.csv'))
 
     # Lọc lịch hẹn của bệnh nhân hiện tại
     my_appointments = appointments[appointments['patient_email'] == user['email']]
@@ -325,9 +326,9 @@ def page_admin_dashboard():
     st.caption("⚡ Trang tự động cập nhật mỗi 10 giây")
     st.markdown("---")
 
-    appointments = pd.read_csv('appointments.csv')
-    doctors = pd.read_csv('doctors.csv')
-    clinics = pd.read_csv('clinics.csv')
+    appointments = pd.read_csv(get_data_path('appointments.csv'))
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
+    clinics = pd.read_csv(get_data_path('clinics.csv'))
 
     # --- Thống kê tổng quan ---
     col1, col2, col3, col4 = st.columns(4)
@@ -393,9 +394,9 @@ def page_admin_dashboard():
 
         if st.button("🔄 Cập nhật trạng thái", key="btn_update_status"):
             # Đọc lại file CSV, cập nhật status, ghi lại toàn bộ
-            all_appointments = pd.read_csv('appointments.csv')
+            all_appointments = pd.read_csv(get_data_path('appointments.csv'))
             all_appointments.loc[all_appointments['id'] == selected_apt, 'status'] = new_status
-            all_appointments.to_csv('appointments.csv', index=False)
+            all_appointments.to_csv(get_data_path('appointments.csv'), index=False)
 
             status_vn = "Đã khám xong" if new_status == "Completed" else "Đã hủy"
             st.success(f"✅ Đã cập nhật lịch hẹn **{selected_apt}** → **{status_vn}**")

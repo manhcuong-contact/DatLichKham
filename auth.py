@@ -1,8 +1,9 @@
 import pandas as pd
+from config import get_data_path
 import hashlib
 import os
 
-USERS_FILE = 'users.csv'
+USERS_FILE = get_data_path('users.csv')
 
 def hash_password(password):
     """Mã hóa mật khẩu bằng SHA-256."""
