@@ -314,7 +314,7 @@ def page_history():
     merged = merged.merge(clinics, left_on='clinic_id', right_on='id', suffixes=('', '_clinic'))
 
     # Hiển thị bảng lịch sử
-    display_df = merged[['id', 'patient_name', 'date', 'time_slot', 'name_doc', 'specialty', 'name_clinic', 'status']].copy()
+    display_df = merged[['id', 'patient_name', 'date', 'time_slot', 'name', 'specialty', 'name_clinic', 'status']].copy()
     display_df.columns = ['Mã lịch hẹn', 'Tên bệnh nhân', 'Ngày khám', 'Giờ khám', 'Bác sĩ', 'Chuyên khoa', 'Phòng khám', 'Trạng thái']
 
     # Đánh màu trạng thái
@@ -388,7 +388,7 @@ def page_admin_dashboard():
     merged = merged.merge(clinics, left_on='clinic_id', right_on='id', suffixes=('', '_clinic'))
 
     display_cols = ['id', 'patient_name', 'patient_email', 'date', 'time_slot',
-                    'name_doc', 'specialty', 'name_clinic', 'status']
+                    'name', 'specialty', 'name_clinic', 'status']
     display_df = merged[display_cols].copy()
     display_df.columns = ['Mã', 'Bệnh nhân', 'Email', 'Ngày', 'Giờ',
                           'Bác sĩ', 'Chuyên khoa', 'Phòng khám', 'Trạng thái']
