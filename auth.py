@@ -9,7 +9,7 @@ def hash_password(password):
     """Mã hóa mật khẩu bằng SHA-256."""
     return hashlib.sha256(password.encode()).hexdigest()
 
-def register_user(email, password, address, role="Patient"):
+def register_user(email, password, address, province="", district="", role="Patient"):
     """
     Đăng ký tài khoản mới.
     - Kiểm tra email trùng lặp.
@@ -31,7 +31,9 @@ def register_user(email, password, address, role="Patient"):
         'email': [email],
         'password_hash': [password_hash],
         'role': [role],
-        'address': [address]
+        'address': [address],
+        'province': [province],
+        'district': [district]
     })
 
     # Đảm bảo file có dấu xuống dòng ở cuối trước khi append

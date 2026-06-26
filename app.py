@@ -8,6 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
+from location_service import get_vn_locations
 from auth import register_user, login_user
 from geo_service import address_to_coords
 from ai_service import ai_triage_chat, rag_answer
@@ -71,28 +72,39 @@ def page_login():
 
         # --- TAB ĐĂNG KÝ ---
         with tab_register:
-            with st.form("register_form"):
-                st.subheader("Tạo tài khoản mới")
-                reg_email = st.text_input("Email:", key="reg_email")
-                reg_password = st.text_input("Mật khẩu:", type="password", key="reg_password")
-                reg_password2 = st.text_input("Xác nhận mật khẩu:", type="password", key="reg_password2")
-                reg_address = st.text_input("Địa chỉ nhà:", placeholder="Ví dụ: 55 Nguyễn Trãi, Thanh Xuân, Hà Nội")
-                submit_register = st.form_submit_button("Đăng ký", use_container_width=True)
+            st.subheader("Tạo tài khoản mới")
+            reg_email = st.text_input("Email:", key="reg_email")
+            reg_password = st.text_input("Mật khẩu:", type="password", key="reg_password")
+            reg_password2 = st.text_input("Xác nhận mật khẩu:", type="password", key="reg_password2")
+            
+            locations = get_vn_locations()
+            provinces = list(locations.keys())
+            if not provinces:
+                provinces = ["Chưa có dữ liệu"]
+            selected_province = st.selectbox("Tỉnh / Thành phố:", provinces, key="reg_province")
+            districts = locations.get(selected_province, ["Chưa có dữ liệu"])
+            selected_district = st.selectbox("Quận / Huyện:", districts, key="reg_district")
+            
+            reg_address = st.text_input("Địa chỉ chi tiết (Tùy chọn):", placeholder="Ví dụ: 55 Nguyễn Trãi")
+            submit_register = st.button("Đăng ký", use_container_width=True)
 
-                if submit_register:
-                    if not reg_email or not reg_password or not reg_address:
-                        st.error("Vui lòng nhập đầy đủ thông tin!")
-                    elif reg_password != reg_password2:
-                        st.error("Mật khẩu xác nhận không khớp!")
-                    elif len(reg_password) < 6:
-                        st.error("Mật khẩu phải có ít nhất 6 ký tự!")
+            if submit_register:
+                if not reg_email or not reg_password:
+                    st.error("Vui lòng nhập đầy đủ Email và Mật khẩu!")
+                elif reg_password != reg_password2:
+                    st.error("Mật khẩu xác nhận không khớp!")
+                elif len(reg_password) < 6:
+                    st.error("Mật khẩu phải có ít nhất 6 ký tự!")
+                else:
+                    # Gộp địa chỉ chi tiết với Tỉnh, Huyện để lưu thành address chung (tuỳ chọn sử dụng sau này)
+                    full_address = f"{reg_address}, {selected_district}, {selected_province}" if reg_address else f"{selected_district}, {selected_province}"
+                    
+                    success, message = register_user(reg_email, reg_password, full_address, selected_province, selected_district)
+                    if success:
+                        st.session_state['just_registered'] = True
+                        st.rerun()
                     else:
-                        success, message = register_user(reg_email, reg_password, reg_address)
-                        if success:
-                            st.session_state['just_registered'] = True
-                            st.rerun()
-                        else:
-                            st.error(message)
+                        st.error(message)
 
 
 # =============================================================================
@@ -139,13 +151,29 @@ def page_booking():
     with col_email:
         st.text_input("Email:", value=user['email'], disabled=True, key="booking_email")
 
-    # Nhập địa chỉ nhà → Geopy tự động chuyển thành tọa độ GPS
-    user_address = st.text_input(
-        "📍 Địa chỉ nhà của bạn:",
-        value=user.get('address', ''),
-        placeholder="Ví dụ: 55 Nguyễn Trãi, Thanh Xuân, Hà Nội",
-        key="booking_address"
-    )
+    st.markdown("**📍 Vị trí tìm kiếm phòng khám:**")
+    locations = get_vn_locations()
+    provinces = list(locations.keys())
+    if not provinces: provinces = ["Chưa có dữ liệu"]
+    
+    # Lấy thông tin mặc định của user nếu có
+    import math
+    def get_valid_value(val):
+        return val if val and not (isinstance(val, float) and math.isnan(val)) else ''
+        
+    default_province = get_valid_value(user.get('province'))
+    default_district = get_valid_value(user.get('district'))
+    
+    idx_p = provinces.index(default_province) if default_province in provinces else 0
+    booking_province = st.selectbox("Tỉnh / Thành phố:", provinces, index=idx_p, key="booking_province")
+    
+    districts = locations.get(booking_province, ["Chưa có dữ liệu"])
+    idx_d = districts.index(default_district) if default_district in districts else 0
+    booking_district = st.selectbox("Quận / Huyện:", districts, index=idx_d, key="booking_district")
+    
+    booking_address_detail = st.text_input("Địa chỉ chi tiết (Số nhà, đường... - Tùy chọn):", key="booking_address_detail")
+    
+    user_address = f"{booking_address_detail}, {booking_district}, {booking_province}" if booking_address_detail else f"{booking_district}, {booking_province}"
 
     # Hiển thị tọa độ nếu đã geocode
     if 'user_coords' in st.session_state:
