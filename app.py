@@ -159,6 +159,11 @@ def page_booking():
     st.caption("Chọn thời gian bạn muốn khám trước, hệ thống sẽ tìm phòng khám gần nhất và bác sĩ còn lịch trống phù hợp với triệu chứng của bạn.")
     st.markdown("---")
 
+    if 'booking_success' in st.session_state:
+        st.success("🎉 " + st.session_state['booking_success'])
+        st.balloons()
+        del st.session_state['booking_success']
+
     # ==========================
     # 1. FORM NHẬP LIỆU (UI)
     # ==========================
@@ -262,7 +267,8 @@ def page_booking():
                 if is_nearest:
                     folium.PolyLine(locations=[[u_lat, u_lon], [row['clinic_lat'], row['clinic_lon']]], color='#818cf8', weight=3, opacity=0.8, dash_array='10').add_to(m)
             
-            st_folium(m, width=None, height=420, use_container_width=True)
+            # returned_objects=[] helps prevent ghost reruns from st_folium which can swallow button clicks
+            st_folium(m, width=None, height=420, use_container_width=True, returned_objects=[])
 
             # ==========================
             # 4. CHỌN BÁC SĨ ĐỂ ĐẶT LỊCH
@@ -284,10 +290,10 @@ def page_booking():
                 
                 success, message, slots = book_appointment(p_name, user['email'], selected_doc_id, b_date, b_time)
                 if success:
-                    st.success("🎉 " + message)
-                    st.balloons()
-                    # Xóa search_results để reset trang sau khi đặt thành công
+                    st.session_state['booking_success'] = message
+                    # Xóa search_results để ẩn phần kết quả đi
                     del st.session_state['search_results']
+                    st.rerun()
                 else:
                     st.warning("⚠️ " + message)
 
