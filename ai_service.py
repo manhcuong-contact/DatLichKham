@@ -72,6 +72,16 @@ def ai_triage_chat(user_message, chat_history=None):
         # Thử trích xuất JSON từ phản hồi
         parsed_json = _extract_json(ai_text)
 
+        # Xóa phần JSON ra khỏi câu trả lời để không hiện lên UI
+        if parsed_json:
+            start = ai_text.rfind('{')
+            if start != -1:
+                block_start = ai_text.rfind('```', 0, start)
+                if block_start != -1:
+                    ai_text = ai_text[:block_start].strip()
+                else:
+                    ai_text = ai_text[:start].strip()
+
         return ai_text, parsed_json
 
     except Exception as e:
