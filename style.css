@@ -1,0 +1,71 @@
+/* ===== GOOGLE FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ===== BASE ===== */
+html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
+
+/* ===== APP BACKGROUND ===== */
+.stApp { background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%); min-height: 100vh; }
+.main .block-container { padding: 2rem 2.5rem; max-width: 1400px; }
+
+/* ===== SIDEBAR ===== */
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #0d0d1a 0%, #1a1a35 100%) !important; border-right: 1px solid rgba(99,102,241,0.2); }
+[data-testid="stSidebar"] .stMarkdown p, [data-testid="stSidebar"] .stMarkdown h3 { color: #e2e8f0 !important; }
+[data-testid="stSidebar"] .stRadio label { color: #cbd5e1 !important; font-size: 0.9rem; padding: 0.4rem 0; transition: color 0.2s; }
+[data-testid="stSidebar"] .stRadio label:hover { color: #818cf8 !important; }
+[data-testid="stSidebar"] .stButton > button { background: rgba(239,68,68,0.15) !important; border: 1px solid rgba(239,68,68,0.3) !important; color: #fca5a5 !important; box-shadow: none !important; }
+[data-testid="stSidebar"] .stButton > button:hover { background: rgba(239,68,68,0.3) !important; transform: none !important; }
+
+/* ===== HEADINGS ===== */
+h1 { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800 !important; font-size: 2.2rem !important; margin-bottom: 0.3rem !important; }
+h2 { color: #c7d2fe !important; font-weight: 700 !important; font-size: 1.5rem !important; }
+h3 { color: #a5b4fc !important; font-weight: 600 !important; }
+
+/* ===== TEXT ===== */
+p, .stMarkdown p, label { color: #cbd5e1 !important; }
+.stCaption { color: #64748b !important; }
+
+/* ===== METRICS ===== */
+[data-testid="stMetric"] { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.1)); border: 1px solid rgba(99,102,241,0.25); border-radius: 16px; padding: 1.2rem 1.5rem; backdrop-filter: blur(10px); transition: transform 0.2s, box-shadow 0.2s; }
+[data-testid="stMetric"]:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.25); }
+[data-testid="stMetricLabel"] { color: #94a3b8 !important; font-size: 0.85rem !important; font-weight: 500 !important; }
+[data-testid="stMetricValue"] { color: #e2e8f0 !important; font-weight: 700 !important; font-size: 2rem !important; }
+
+/* ===== BUTTONS ===== */
+.stButton > button { background: linear-gradient(135deg, #6366f1, #8b5cf6) !important; color: white !important; border: none !important; border-radius: 10px !important; padding: 0.6rem 1.5rem !important; font-weight: 600 !important; font-size: 0.9rem !important; transition: all 0.25s ease !important; box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important; }
+.stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 25px rgba(99,102,241,0.45) !important; background: linear-gradient(135deg, #4f46e5, #7c3aed) !important; }
+
+/* ===== INPUTS ===== */
+.stTextInput > div > div > input, .stTextArea > div > div > textarea { background: rgba(15,15,30,0.8) !important; border: 1px solid rgba(99,102,241,0.3) !important; border-radius: 10px !important; color: #e2e8f0 !important; transition: border-color 0.2s !important; }
+.stSelectbox > div > div { background: rgba(15,15,30,0.8) !important; border: 1px solid rgba(99,102,241,0.3) !important; border-radius: 10px !important; color: #e2e8f0 !important; }
+.stDateInput > div > div > input { background: rgba(15,15,30,0.8) !important; border: 1px solid rgba(99,102,241,0.3) !important; border-radius: 10px !important; color: #e2e8f0 !important; }
+
+/* ===== TABS ===== */
+.stTabs [data-baseweb="tab-list"] { background: rgba(15,15,30,0.6) !important; border-radius: 12px !important; padding: 4px !important; border: 1px solid rgba(99,102,241,0.15) !important; }
+.stTabs [data-baseweb="tab"] { border-radius: 8px !important; color: #94a3b8 !important; font-weight: 500 !important; transition: all 0.2s !important; }
+.stTabs [aria-selected="true"] { background: linear-gradient(135deg, #6366f1, #8b5cf6) !important; color: white !important; }
+
+/* ===== DATAFRAME ===== */
+.stDataFrame { border-radius: 12px !important; overflow: hidden !important; border: 1px solid rgba(99,102,241,0.2) !important; }
+
+/* ===== ALERTS ===== */
+.stSuccess { background: rgba(16,185,129,0.15) !important; border: 1px solid rgba(16,185,129,0.4) !important; border-radius: 10px !important; }
+.stError { background: rgba(239,68,68,0.15) !important; border: 1px solid rgba(239,68,68,0.4) !important; border-radius: 10px !important; }
+.stWarning { background: rgba(245,158,11,0.15) !important; border: 1px solid rgba(245,158,11,0.4) !important; border-radius: 10px !important; }
+.stInfo { background: rgba(99,102,241,0.15) !important; border: 1px solid rgba(99,102,241,0.4) !important; border-radius: 10px !important; }
+
+/* ===== DIVIDER ===== */
+hr { border-color: rgba(99,102,241,0.15) !important; margin: 1.5rem 0 !important; }
+
+/* ===== CUSTOM COMPONENTS ===== */
+.custom-card { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.05)); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; backdrop-filter: blur(10px); }
+.badge-active { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+.badge-completed { background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.4); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+.badge-cancelled { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+
+/* ===== LOGIN PAGE ===== */
+.login-hero { text-align: center; padding: 3rem 0 2rem; }
+.login-hero .hospital-icon { font-size: 4rem; display: block; margin-bottom: 0.8rem; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.login-hero h1 { font-size: 2.8rem !important; margin-bottom: 0.5rem !important; }
+.login-hero p { color: #64748b !important; font-size: 1.05rem !important; }

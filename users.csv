@@ -2,3 +2,4 @@ id,email,password_hash,role,address,province,district
 U001,admin@hospital.com,240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9,Admin,120 Trần Hưng Đạo - Hoàn Kiếm - Hà Nội,,
 U002,benhnhan@gmail.com,d4587ea9ead060c13fd994f21ecfa7926272a78854a2c20136b10a3c9e53e71e,Patient,55 Nguyễn Trãi - Thanh Xuân - Hà Nội,,
 U003,cc@1.com,68d921df179a18eea7c85a08955397b7caf31bc13b400a57edaaa16ba556f26d,Patient,Hà Nội,,
+U004,manhcuong.contact@gmail.com,68d921df179a18eea7c85a08955397b7caf31bc13b400a57edaaa16ba556f26d,Patient,"55, Huyện Thọ Xuân, Tỉnh Thanh Hóa",Tỉnh Thanh Hóa,Huyện Thọ Xuân
