@@ -14,6 +14,30 @@ ALL_TIME_SLOTS = [
     "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"
 ]
 
+import pytz
+def get_future_time_slots(selected_date_str):
+    """
+    Lọc các khung giờ còn khả dụng trong tương lai so với thời gian thực tế hiện tại.
+    """
+    vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+    now = datetime.now(vn_tz)
+    current_date_str = now.strftime("%Y-%m-%d")
+    
+    if selected_date_str > current_date_str:
+        return ALL_TIME_SLOTS
+    elif selected_date_str < current_date_str:
+        return []
+    else:
+        # Nếu là ngày hôm nay, chỉ lấy các slot từ giờ hiện tại + 30 phút trở đi
+        now_minutes = now.hour * 60 + now.minute
+        valid_slots = []
+        for slot in ALL_TIME_SLOTS:
+            h, m = map(int, slot.split(':'))
+            slot_minutes = h * 60 + m
+            if slot_minutes >= now_minutes + 30:
+                valid_slots.append(slot)
+        return valid_slots
+
 # =============================================================================
 # TASK 1.2: Tìm phòng khám gần nhất (Công thức khoảng cách Euclid)
 # =============================================================================

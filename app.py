@@ -9,7 +9,7 @@ from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
                    get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS,
-                   find_available_doctors_and_clinics)
+                   find_available_doctors_and_clinics, get_future_time_slots)
 from location_service import get_vn_locations
 from auth import register_user, login_user
 from geo_service import address_to_coords
@@ -197,7 +197,12 @@ def page_booking():
     with col_date:
         selected_date = st.date_input("📅 Ngày khám muốn đặt:").strftime("%Y-%m-%d")
     with col_time:
-        selected_time = st.selectbox("⏰ Khung giờ muốn đặt:", options=ALL_TIME_SLOTS)
+        available_slots = get_future_time_slots(selected_date)
+        if not available_slots:
+            st.warning("⚠️ Đã hết giờ khám trong ngày hôm nay. Vui lòng chọn ngày khác.")
+            selected_time = None
+        else:
+            selected_time = st.selectbox("⏰ Khung giờ muốn đặt:", options=available_slots)
 
     symptom_input = st.text_input("🩺 Nhập triệu chứng:", placeholder="Ví dụ: đau đầu, mệt mỏi, chóng mặt, đau bụng...", key="booking_symptom")
 
@@ -211,6 +216,8 @@ def page_booking():
             st.error("⚠️ Vui lòng nhập Họ và tên!")
         elif not symptom_input:
             st.error("⚠️ Vui lòng nhập triệu chứng!")
+        elif not selected_time:
+            st.error("⚠️ Đã hết giờ khám trong ngày hôm nay. Vui lòng chọn ngày khác!")
         else:
             with st.spinner("🔄 Đang xác định tọa độ từ địa chỉ..."):
                 lat, lon, geo_msg = address_to_coords(user_address)
@@ -303,9 +310,10 @@ def page_booking():
 # TRANG LỊCH SỬ
 # ===========================================================================
 def page_history():
+    st_autorefresh(interval=10000, limit=None, key="history_autorefresh")
     user = st.session_state['user']
     st.title("📜 Lịch Sử Đặt Lịch")
-    st.caption("Xem toàn bộ các lịch hẹn khám bệnh của bạn.")
+    st.caption("Xem toàn bộ các lịch hẹn khám bệnh của bạn. Trang tự động cập nhật sau mỗi 10 giây.")
     st.markdown("---")
     appointments = pd.read_csv(get_data_path('appointments.csv'))
     doctors = pd.read_csv(get_data_path('doctors.csv'))
