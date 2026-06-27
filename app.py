@@ -220,7 +220,7 @@ def page_booking():
                 
                 with st.spinner("🔄 Đang tìm bác sĩ còn lịch trống..."):
                     # Gọi hàm logic mới
-                    result_df = find_available_doctors_and_clinics(symptom_input, selected_date, selected_time, lat, lon)
+                    result_df = find_available_doctors_and_clinics(symptom_input, selected_date, selected_time, lat, lon, booking_province)
                     st.session_state['search_results'] = result_df
 
     # ==========================

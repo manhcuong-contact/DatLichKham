@@ -89,18 +89,34 @@ def get_doctors(clinic_id, specialty):
 # =============================================================================
 # TASK 1.4: Xử lý logic đặt lịch & Check trùng lịch (Cải tiến gợi ý đa khung giờ)
 # =============================================================================
-def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, user_lon):
+def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, user_lon, booking_province=""):
     """
-    1. Lọc tất cả bác sĩ có triệu chứng khớp.
-    2. Loại bỏ những bác sĩ đã bị đặt lịch (Active) vào date và time_slot.
-    3. Ghép với thông tin phòng khám và tính khoảng cách từ (user_lat, user_lon).
-    4. Trả về DataFrame chứa các bác sĩ phù hợp, sắp xếp theo khoảng cách gần nhất.
+    1. Lọc phòng khám theo booking_province.
+    2. Lọc bác sĩ có triệu chứng khớp và thuộc các phòng khám trên.
+    3. Lọc theo lịch làm việc chẵn/lẻ (schedule_type) dựa vào ngày khám.
+    4. Loại bỏ những bác sĩ đã bị đặt lịch (Active) vào date và time_slot.
+    5. Ghép với thông tin phòng khám và tính khoảng cách từ (user_lat, user_lon).
+    6. Trả về DataFrame chứa các bác sĩ phù hợp, sắp xếp theo khoảng cách gần nhất.
     """
     doctors = pd.read_csv(get_data_path('doctors.csv'))
     clinics = pd.read_csv(get_data_path('clinics.csv'))
     appointments = pd.read_csv(get_data_path('appointments.csv'))
 
-    # 1. Tìm các bác sĩ có triệu chứng khớp
+    # Nếu cột schedule_type chưa có (chạy phiên bản cũ), tạo mặc định
+    if 'schedule_type' not in doctors.columns:
+        doctors['schedule_type'] = 'All'
+
+    # 1. Lọc phòng khám theo tỉnh
+    if booking_province and booking_province != "Chưa có dữ liệu":
+        clinics = clinics[clinics['address'].str.contains(booking_province, case=False, na=False)]
+    
+    if clinics.empty:
+        return pd.DataFrame()
+        
+    valid_clinic_ids = clinics['id'].tolist()
+    doctors = doctors[doctors['clinic_id'].isin(valid_clinic_ids)]
+
+    # 2. Tìm các bác sĩ có triệu chứng khớp
     symptom_text_lower = symptom_text.lower().strip()
     patient_keywords = [kw.strip() for kw in symptom_text_lower.replace(',', '|').split('|') if kw.strip()]
     
@@ -119,7 +135,26 @@ def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, 
     if matched_doctors.empty:
         return pd.DataFrame()
 
-    # 2. Loại bỏ các bác sĩ đã có lịch hẹn Active vào date và time_slot
+    # 3. Lọc theo schedule_type (Even/Odd)
+    try:
+        dt = datetime.strptime(date, "%Y-%m-%d")
+        day = dt.day
+        is_even_day = (day % 2 == 0)
+    except Exception:
+        is_even_day = True # Fallback
+
+    def is_working(schedule_type):
+        if schedule_type == 'All': return True
+        if schedule_type == 'Even' and is_even_day: return True
+        if schedule_type == 'Odd' and not is_even_day: return True
+        return False
+
+    matched_doctors = matched_doctors[matched_doctors['schedule_type'].apply(is_working)].copy()
+
+    if matched_doctors.empty:
+        return pd.DataFrame()
+
+    # 4. Loại bỏ các bác sĩ đã có lịch hẹn Active vào date và time_slot
     booked_appointments = appointments[
         (appointments['date'] == date) &
         (appointments['time_slot'] == time_slot) &
@@ -131,7 +166,7 @@ def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, 
     if available_doctors.empty:
         return pd.DataFrame()
 
-    # 3. Tính khoảng cách và lấy thông tin clinic
+    # 5. Tính khoảng cách và lấy thông tin clinic
     distances = []
     clinic_names = []
     clinic_lats = []
@@ -157,7 +192,7 @@ def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, 
     available_doctors['clinic_lat'] = clinic_lats
     available_doctors['clinic_lon'] = clinic_lons
 
-    # 4. Sắp xếp: Ưu tiên khoảng cách gần nhất, sau đó đến số triệu chứng khớp cao nhất
+    # 6. Sắp xếp: Ưu tiên khoảng cách gần nhất, sau đó đến số triệu chứng khớp cao nhất
     result_df = available_doctors.sort_values(by=['distance', 'match_count'], ascending=[True, False])
     return result_df
 
