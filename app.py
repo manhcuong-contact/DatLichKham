@@ -367,7 +367,8 @@ def page_admin_dashboard():
         f"❌ Đã hủy ({cancelled})"
     ])
     with tab_all:
-        render_apt_table(merged, show_actions=False)
+        st.markdown("<p style='color:#a5b4fc;font-size:0.85rem;'>💡 Bấm <b>✅</b> để hoàn thành hoặc <b>❌</b> để hủy lịch hẹn (chỉ áp dụng cho lịch đang hoạt động).</p>", unsafe_allow_html=True)
+        render_apt_table(merged, show_actions=True)
     with tab_active:
         st.markdown("<p style='color:#a5b4fc;font-size:0.85rem;'>💡 Bấm <b>✅</b> để hoàn thành hoặc <b>❌</b> để hủy lịch hẹn ngay trên bảng.</p>", unsafe_allow_html=True)
         render_apt_table(merged[merged['status'] == 'Active'], show_actions=True)
