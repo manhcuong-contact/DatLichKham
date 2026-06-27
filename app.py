@@ -328,7 +328,7 @@ def page_history():
         return ''
 
     st.dataframe(
-        display_df.style.applymap(color_status, subset=['Trạng thái']),
+        display_df.style.map(color_status, subset=['Trạng thái']),
         use_container_width=True,
         hide_index=True
     )
