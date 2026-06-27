@@ -313,7 +313,7 @@ def page_admin_dashboard():
     merged = appointments.merge(doctors, left_on='doctor_id', right_on='id', suffixes=('', '_doc'))
     merged = merged.merge(clinics, left_on='clinic_id', right_on='id', suffixes=('', '_clinic'))
 
-    def render_apt_table(df, show_actions=False):
+    def render_apt_table(df, show_actions=False, key_prefix=""):
         if df.empty:
             st.info("Không có lịch hẹn nào.")
             return
@@ -344,14 +344,14 @@ def page_admin_dashboard():
                 with row_cols[9]:
                     b1, b2 = st.columns(2)
                     with b1:
-                        if st.button("✅", key=f"done_{row['id']}", help="Đánh dấu Hoàn thành"):
+                        if st.button("✅", key=f"{key_prefix}done_{row['id']}", help="Đánh dấu Hoàn thành"):
                             all_apts = pd.read_csv(get_data_path('appointments.csv'))
                             all_apts.loc[all_apts['id'] == row['id'], 'status'] = 'Completed'
                             all_apts.to_csv(get_data_path('appointments.csv'), index=False)
                             st.success(f"✅ {row['id']} → Hoàn thành")
                             st.rerun()
                     with b2:
-                        if st.button("❌", key=f"cancel_{row['id']}", help="Hủy lịch hẹn"):
+                        if st.button("❌", key=f"{key_prefix}cancel_{row['id']}", help="Hủy lịch hẹn"):
                             all_apts = pd.read_csv(get_data_path('appointments.csv'))
                             all_apts.loc[all_apts['id'] == row['id'], 'status'] = 'Cancelled'
                             all_apts.to_csv(get_data_path('appointments.csv'), index=False)
@@ -368,14 +368,14 @@ def page_admin_dashboard():
     ])
     with tab_all:
         st.markdown("<p style='color:#a5b4fc;font-size:0.85rem;'>💡 Bấm <b>✅</b> để hoàn thành hoặc <b>❌</b> để hủy lịch hẹn (chỉ áp dụng cho lịch đang hoạt động).</p>", unsafe_allow_html=True)
-        render_apt_table(merged, show_actions=True)
+        render_apt_table(merged, show_actions=True, key_prefix="all_")
     with tab_active:
         st.markdown("<p style='color:#a5b4fc;font-size:0.85rem;'>💡 Bấm <b>✅</b> để hoàn thành hoặc <b>❌</b> để hủy lịch hẹn ngay trên bảng.</p>", unsafe_allow_html=True)
-        render_apt_table(merged[merged['status'] == 'Active'], show_actions=True)
+        render_apt_table(merged[merged['status'] == 'Active'], show_actions=True, key_prefix="active_")
     with tab_done:
-        render_apt_table(merged[merged['status'] == 'Completed'], show_actions=False)
+        render_apt_table(merged[merged['status'] == 'Completed'], show_actions=False, key_prefix="done_")
     with tab_cancel:
-        render_apt_table(merged[merged['status'] == 'Cancelled'], show_actions=False)
+        render_apt_table(merged[merged['status'] == 'Cancelled'], show_actions=False, key_prefix="cancel_")
 
     st.markdown("---")
     st.markdown("### 📈 Biểu đồ thống kê")
