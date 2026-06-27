@@ -12,7 +12,7 @@ from logic import (find_nearest_clinic, find_doctors_by_symptom,
 from location_service import get_vn_locations
 from auth import register_user, login_user
 from geo_service import address_to_coords
-from ai_service import ai_triage_chat, rag_answer
+from ai_service import unified_ai_chat, UNIFIED_SYSTEM_PROMPT
 
 # ===========================================================================
 # CẤU HÌNH TRANG
@@ -138,7 +138,7 @@ def render_sidebar():
     if user['role'] == 'Admin':
         page = st.sidebar.radio("menu", ["📊 Bảng quản lý"], label_visibility="collapsed")
     else:
-        page = st.sidebar.radio("menu", ["📅 Đặt lịch khám", "📜 Lịch sử đặt lịch", "🤖 AI Lễ tân", "📚 Hỏi đáp AI"], label_visibility="collapsed")
+        page = st.sidebar.radio("menu", ["📅 Đặt lịch khám", "📜 Lịch sử đặt lịch", "🤖 Trợ lý AI"], label_visibility="collapsed")
     st.sidebar.markdown("---")
     if st.sidebar.button("🚪 Đăng xuất", use_container_width=True):
         for key in list(st.session_state.keys()):
@@ -403,80 +403,86 @@ def page_admin_dashboard():
 
 
 # ===========================================================================
-# AI LỄ TÂN
+# TRỢ LÝ AI TỔNG HỢP (UNIFIED AI)
 # ===========================================================================
-def page_ai_chatbot():
-    st.title("🤖 AI Lễ tân — Tư vấn triệu chứng")
-    st.caption("Mô tả triệu chứng của bạn, AI sẽ gợi ý chuyên khoa phù hợp.")
+def page_unified_ai():
+    st.title("🤖 Trợ lý AI Bệnh viện")
+    st.caption("Hỗ trợ tư vấn triệu chứng, hỏi đáp dịch vụ, bảng giá và thủ tục bệnh viện.")
     st.markdown("---")
+
+    # Hiển thị câu hỏi mẫu
+    st.markdown("<p style='color:#a5b4fc;font-size:0.9rem;margin-bottom:0.5rem;'>💡 <b>Câu hỏi mẫu:</b></p>", unsafe_allow_html=True)
+    sample_cols = st.columns(3)
+    sample_questions = ["Khám chuyên khoa giá bao nhiêu?", "Thủ tục khám BHYT thế nào?", "Quy trình khám bệnh ra sao?"]
+    
+    # Khởi tạo state
     if 'chat_messages' not in st.session_state:
-        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"}]
+        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI của bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"}]
     if 'chat_history_gemini' not in st.session_state:
         st.session_state['chat_history_gemini'] = [
-            {"role": "user", "parts": ["Bạn là một AI lễ tân bệnh viện thông minh. Nhiệm vụ của bạn là lắng nghe mô tả triệu chứng của bệnh nhân, phân tích và xác định chuyên khoa phù hợp nhất. Trả lời bằng tiếng Việt, thân thiện. Cuối câu trả lời, luôn đính kèm JSON: {\"specialty\": \"Tên chuyên khoa\", \"symptoms\": \"triệu chứng\", \"urgency\": \"low/medium/high\"}"]},
-            {"role": "model", "parts": ["Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"]},
+            {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI của bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"]}
         ]
     if 'ai_specialty' not in st.session_state:
         st.session_state['ai_specialty'] = None
+
+    for i, q in enumerate(sample_questions):
+        with sample_cols[i]:
+            if st.button(q, key=f"sample_q_{i}", use_container_width=True):
+                st.session_state['pending_user_input'] = q
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Khung hiển thị tin nhắn
     for msg in st.session_state['chat_messages']:
         with st.chat_message(msg['role']):
             st.markdown(msg['content'])
-    if user_input := st.chat_input("Đại loại bạn đang có triệu chứng gì?"):
+
+    # Lấy input (từ ô chat hoặc từ nút bấm mẫu)
+    user_input = st.chat_input("Hỏi tôi bất cứ điều gì (VD: Tôi bị đau đầu, hoặc Giá khám là bao nhiêu?)...")
+    
+    if st.session_state.get('pending_user_input'):
+        user_input = st.session_state['pending_user_input']
+        del st.session_state['pending_user_input']
+
+    if user_input:
         st.session_state['chat_messages'].append({"role": "user", "content": user_input})
         with st.chat_message("user"): st.markdown(user_input)
+        
         with st.chat_message("assistant"):
-            with st.spinner("🧠 AI đang phân tích..."):
-                ai_response, parsed_json = ai_triage_chat(user_input, chat_history=st.session_state['chat_history_gemini'])
+            with st.spinner("🧠 AI đang suy nghĩ..."):
+                ai_response, parsed_json = unified_ai_chat(user_input, chat_history=st.session_state['chat_history_gemini'])
             st.markdown(ai_response)
+        
         st.session_state['chat_messages'].append({"role": "assistant", "content": ai_response})
         st.session_state['chat_history_gemini'].append({"role": "user", "parts": [user_input]})
         st.session_state['chat_history_gemini'].append({"role": "model", "parts": [ai_response]})
+        
         if parsed_json and parsed_json.get('specialty') and parsed_json['specialty'] != 'Chưa xác định':
             st.session_state['ai_specialty'] = parsed_json
+
+    # Hiển thị thẻ kết quả Triage nếu có
     if st.session_state.get('ai_specialty'):
         result = st.session_state['ai_specialty']
         st.markdown("---")
-        st.subheader("🎯 Kết quả phân loại từ AI")
+        st.subheader("🎯 Kết quả tư vấn chuyên khoa")
         col1, col2, col3 = st.columns(3)
         with col1: st.metric("🏥 Chuyên khoa", result.get('specialty', 'N/A'))
         with col2: st.metric("🩺 Triệu chứng", result.get('symptoms', 'N/A'))
         with col3:
             urgency = result.get('urgency', 'low')
             st.metric("⚠️ Mức độ khẩn cấp", {"low": "🟢 Thấp", "medium": "🟡 Trung bình", "high": "🔴 Cao"}.get(urgency, urgency))
+
+    # Nút xóa lịch sử bên sidebar
     st.sidebar.markdown("---")
-    if st.sidebar.button("🗑️ Xóa lịch sử chat", key="btn_clear_chat"):
-        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là trợ lý AI lễ tân bệnh viện. Bạn hãy mô tả triệu chứng của mình, tôi sẽ giúp bạn tìm chuyên khoa phù hợp nhé! 😊"}]
-        st.session_state['chat_history_gemini'] = [{"role": "user", "parts": ["Bạn là AI lễ tân bệnh viện."]}, {"role": "model", "parts": ["Xin chào! Tôi sẵn sàng giúp bạn."]}]
+    if st.sidebar.button("🗑️ Xóa lịch sử chat AI", key="btn_clear_chat"):
+        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI Bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"}]
+        st.session_state['chat_history_gemini'] = [
+            {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI Bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"]}
+        ]
         st.session_state['ai_specialty'] = None
         st.rerun()
-
-
-# ===========================================================================
-# HỎI ĐÁP AI
-# ===========================================================================
-def page_rag_qa():
-    st.title("📚 Hỏi đáp AI — Tài liệu bệnh viện")
-    st.caption("Hỏi bất kỳ câu hỏi nào về bảng giá dịch vụ, chính sách BHYT, quy trình khám bệnh...")
-    st.markdown("---")
-    st.markdown("### 💡 Câu hỏi mẫu")
-    sample_cols = st.columns(3)
-    sample_questions = ["Khám chuyên khoa giá bao nhiêu?", "Thủ tục khám BHYT như thế nào?", "Quy trình khám bệnh gồm những bước nào?"]
-    for i, q in enumerate(sample_questions):
-        with sample_cols[i]:
-            if st.button(q, key=f"sample_q_{i}", use_container_width=True):
-                st.session_state['rag_question'] = q
-    st.markdown("---")
-    default_q = st.session_state.get('rag_question', '')
-    question = st.text_input("❓ Nhập câu hỏi của bạn:", value=default_q, placeholder="Bạn muốn hỏi gì về dịch vụ bệnh viện?", key="rag_input")
-    if st.button("🔍 Tìm câu trả lời", key="btn_rag") and question:
-        with st.spinner("🧠 AI đang tra cứu tài liệu..."):
-            answer, sources = rag_answer(question)
-        st.markdown("### 📝 Câu trả lời")
-        st.markdown(f'<div class="custom-card">{answer}</div>', unsafe_allow_html=True)
-        if sources:
-            st.caption("📁 Nguồn tài liệu: " + ", ".join(sources))
-        if 'rag_question' in st.session_state:
-            del st.session_state['rag_question']
 
 
 # ===========================================================================
@@ -493,10 +499,8 @@ def main():
             page_history()
         elif selected_page == "📊 Bảng quản lý":
             page_admin_dashboard()
-        elif selected_page == "🤖 AI Lễ tân":
-            page_ai_chatbot()
-        elif selected_page == "📚 Hỏi đáp AI":
-            page_rag_qa()
+        elif selected_page == "🤖 Trợ lý AI":
+            page_unified_ai()
 
 if __name__ == "__main__":
     main()
