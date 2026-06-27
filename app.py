@@ -8,7 +8,8 @@ from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 from logic import (find_nearest_clinic, find_doctors_by_symptom,
-                   get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS)
+                   get_doctors, book_appointment, get_available_slots, ALL_TIME_SLOTS,
+                   find_available_doctors_and_clinics)
 from location_service import get_vn_locations
 from auth import register_user, login_user
 from geo_service import address_to_coords
@@ -155,15 +156,20 @@ def render_sidebar():
 def page_booking():
     user = st.session_state['user']
     st.title("📅 Đặt Lịch Khám Bệnh")
-    st.caption("Hệ thống sẽ tìm phòng khám gần nhất và bác sĩ phù hợp với triệu chứng của bạn.")
+    st.caption("Chọn thời gian bạn muốn khám trước, hệ thống sẽ tìm phòng khám gần nhất và bác sĩ còn lịch trống phù hợp với triệu chứng của bạn.")
     st.markdown("---")
-    st.markdown("### 👤 Thông tin của bạn")
+
+    # ==========================
+    # 1. FORM NHẬP LIỆU (UI)
+    # ==========================
+    st.markdown("### 1. Thông tin & Thời gian mong muốn")
+    
     col_name, col_email = st.columns(2)
     with col_name:
         patient_name = st.text_input("Họ và tên:", placeholder="Nguyễn Văn A", key="booking_name")
     with col_email:
         st.text_input("Email:", value=user['email'], disabled=True, key="booking_email")
-    st.markdown("**📍 Vị trí tìm kiếm phòng khám:**")
+        
     locations = get_vn_locations()
     provinces = list(locations.keys()) or ["Chưa có dữ liệu"]
     import math
@@ -171,6 +177,7 @@ def page_booking():
         return val if val and not (isinstance(val, float) and math.isnan(val)) else ''
     default_province = get_valid_value(user.get('province'))
     default_district = get_valid_value(user.get('district'))
+    
     col_p, col_d = st.columns(2)
     with col_p:
         idx_p = provinces.index(default_province) if default_province in provinces else 0
@@ -180,13 +187,20 @@ def page_booking():
         idx_d = districts.index(default_district) if default_district in districts else 0
         booking_district = st.selectbox("📍 Quận / Huyện:", districts, index=idx_d, key="booking_district")
     user_address = f"{booking_district}, {booking_province}"
-    if 'user_coords' in st.session_state:
-        lat, lon = st.session_state['user_coords']
-        st.caption(f"🌐 Tọa độ GPS: ({lat:.6f}, {lon:.6f})")
-    st.markdown("---")
-    st.markdown("### 🩺 Mô tả triệu chứng")
-    symptom_input = st.text_input("Nhập triệu chứng:", placeholder="Ví dụ: đau đầu, mệt mỏi, chóng mặt, đau bụng...", key="booking_symptom")
+
+    col_date, col_time = st.columns(2)
+    with col_date:
+        selected_date = st.date_input("📅 Ngày khám muốn đặt:").strftime("%Y-%m-%d")
+    with col_time:
+        selected_time = st.selectbox("⏰ Khung giờ muốn đặt:", options=ALL_TIME_SLOTS)
+
+    symptom_input = st.text_input("🩺 Nhập triệu chứng:", placeholder="Ví dụ: đau đầu, mệt mỏi, chóng mặt, đau bụng...", key="booking_symptom")
+
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # ==========================
+    # 2. XỬ LÝ TÌM KIẾM
+    # ==========================
     if st.button("🔍 Tìm phòng khám & Bác sĩ phù hợp", key="btn_find"):
         if not patient_name:
             st.error("⚠️ Vui lòng nhập Họ và tên!")
@@ -195,63 +209,88 @@ def page_booking():
         else:
             with st.spinner("🔄 Đang xác định tọa độ từ địa chỉ..."):
                 lat, lon, geo_msg = address_to_coords(user_address)
+            
             if lat is None:
                 st.error(f"❌ {geo_msg}")
             else:
                 st.session_state['user_coords'] = (lat, lon)
-                clinic, dist = find_nearest_clinic(lat, lon)
-                st.session_state['clinic'] = clinic
                 st.session_state['patient_name'] = patient_name
-                st.success(f"📍 Phòng khám gần nhất: **{clinic['name']}** ({clinic['address']}) — {dist:.2f} km")
-                matched_doctors = find_doctors_by_symptom(symptom_input, clinic['id'])
-                st.session_state['doctors'] = matched_doctors
-                if not matched_doctors.empty:
-                    st.info(f"🩺 Tìm thấy **{len(matched_doctors)} bác sĩ** phù hợp:")
-                    display_df = matched_doctors[['id', 'name', 'specialty', 'match_count']].copy()
-                    display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Số triệu chứng khớp']
-                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                st.session_state['booking_date'] = selected_date
+                st.session_state['booking_time'] = selected_time
+                
+                with st.spinner("🔄 Đang tìm bác sĩ còn lịch trống..."):
+                    # Gọi hàm logic mới
+                    result_df = find_available_doctors_and_clinics(symptom_input, selected_date, selected_time, lat, lon)
+                    st.session_state['search_results'] = result_df
+
+    # ==========================
+    # 3. HIỂN THỊ KẾT QUẢ VÀ BẢN ĐỒ
+    # ==========================
+    if 'search_results' in st.session_state and 'user_coords' in st.session_state:
+        result_df = st.session_state['search_results']
+        
+        st.markdown("---")
+        st.markdown("### 2. Kết quả tìm kiếm")
+        
+        if result_df.empty:
+            st.warning("⚠️ Rất tiếc, không tìm thấy bác sĩ nào phù hợp với triệu chứng của bạn và CÒN TRỐNG LỊCH vào thời gian này. Vui lòng thử khung giờ khác hoặc ngày khác!")
+        else:
+            st.success(f"🩺 Tìm thấy **{len(result_df)} bác sĩ** phù hợp và đang rảnh vào **{st.session_state['booking_time']} ngày {st.session_state['booking_date']}**:")
+            
+            # Hiển thị bảng
+            display_df = result_df[['id', 'name', 'specialty', 'clinic_name', 'distance']].copy()
+            display_df['distance'] = display_df['distance'].apply(lambda x: f"{x:.2f} km")
+            display_df.columns = ['Mã BS', 'Tên bác sĩ', 'Chuyên khoa', 'Tên phòng khám', 'Khoảng cách']
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+            # Bản đồ
+            st.markdown("#### 🗺️ Bản đồ các phòng khám phù hợp")
+            u_lat, u_lon = st.session_state['user_coords']
+            m = folium.Map(location=[u_lat, u_lon], zoom_start=13, tiles="CartoDB dark_matter")
+            folium.Marker(location=[u_lat, u_lon], popup="🏠 Nhà của bạn", tooltip="Vị trí của bạn", icon=folium.Icon(color='red', icon='home', prefix='fa')).add_to(m)
+            
+            # Đánh dấu các phòng khám trong kết quả (có thể có nhiều bác sĩ cùng phòng khám, dùng set để lọc trùng)
+            unique_clinics = result_df.drop_duplicates(subset=['clinic_name'])
+            
+            for i, row in unique_clinics.iterrows():
+                is_nearest = (i == unique_clinics.index[0]) # Dòng đầu tiên luôn là gần nhất do đã sort
+                color = 'green' if is_nearest else 'blue'
+                label = f"⭐ {row['clinic_name']} (GẦN NHẤT)" if is_nearest else row['clinic_name']
+                folium.Marker(location=[row['clinic_lat'], row['clinic_lon']], popup=row['clinic_name'], tooltip=label, icon=folium.Icon(color=color, icon='plus-sign')).add_to(m)
+                
+                # Vẽ đường thẳng đến phòng khám gần nhất
+                if is_nearest:
+                    folium.PolyLine(locations=[[u_lat, u_lon], [row['clinic_lat'], row['clinic_lon']]], color='#818cf8', weight=3, opacity=0.8, dash_array='10').add_to(m)
+            
+            st_folium(m, width=None, height=420, use_container_width=True)
+
+            # ==========================
+            # 4. CHỌN BÁC SĨ ĐỂ ĐẶT LỊCH
+            # ==========================
+            st.markdown("---")
+            st.markdown("### 3. Xác nhận Đặt lịch")
+            
+            # Tạo dictionary cho selectbox
+            doc_dict = dict(zip(result_df['id'], result_df.apply(lambda r: f"BS. {r['name']} — {r['specialty']} ({r['clinic_name']} - Cách {r['distance']:.2f} km)", axis=1)))
+            
+            selected_doc_id = st.selectbox("👨‍⚕️ Chọn một bác sĩ từ danh sách trên để chốt lịch:", options=doc_dict.keys(), format_func=lambda x: doc_dict[x])
+            
+            st.info(f"Bạn đang đặt lịch khám với **BS. {result_df[result_df['id'] == selected_doc_id].iloc[0]['name']}** vào lúc **{st.session_state['booking_time']}** ngày **{st.session_state['booking_date']}**.")
+            
+            if st.button("✅ Xác nhận Đặt lịch", key="btn_book"):
+                p_name = st.session_state['patient_name']
+                b_date = st.session_state['booking_date']
+                b_time = st.session_state['booking_time']
+                
+                success, message, slots = book_appointment(p_name, user['email'], selected_doc_id, b_date, b_time)
+                if success:
+                    st.success("🎉 " + message)
+                    st.balloons()
+                    # Xóa search_results để reset trang sau khi đặt thành công
+                    del st.session_state['search_results']
                 else:
-                    st.warning("⚠️ Không tìm thấy bác sĩ phù hợp tại phòng khám này.")
-    if 'user_coords' in st.session_state and 'clinic' in st.session_state:
-        st.markdown("---")
-        st.markdown("### 🗺️ Bản đồ vị trí")
-        u_lat, u_lon = st.session_state['user_coords']
-        clinic_data = st.session_state['clinic']
-        m = folium.Map(location=[u_lat, u_lon], zoom_start=13, tiles="CartoDB dark_matter")
-        folium.Marker(location=[u_lat, u_lon], popup="🏠 Nhà của bạn", tooltip="Vị trí của bạn", icon=folium.Icon(color='red', icon='home', prefix='fa')).add_to(m)
-        all_clinics = pd.read_csv(get_data_path('clinics.csv'))
-        for _, c in all_clinics.iterrows():
-            is_nearest = (c['id'] == clinic_data['id'])
-            color = 'green' if is_nearest else 'blue'
-            label = f"⭐ {c['name']} (GẦN NHẤT)" if is_nearest else c['name']
-            folium.Marker(location=[c['lat'], c['lon']], popup=f"{c['name']}\n{c['address']}", tooltip=label, icon=folium.Icon(color=color, icon='plus-sign')).add_to(m)
-        folium.PolyLine(locations=[[u_lat, u_lon], [clinic_data['lat'], clinic_data['lon']]], color='#818cf8', weight=3, opacity=0.8, dash_array='10').add_to(m)
-        st_folium(m, width=None, height=420, use_container_width=True)
-    if 'doctors' in st.session_state and not st.session_state['doctors'].empty:
-        st.markdown("---")
-        st.markdown("### 📆 Chọn lịch khám")
-        doctors_df = st.session_state['doctors']
-        doc_dict = dict(zip(doctors_df['id'], doctors_df.apply(lambda r: f"{r['name']} — {r['specialty']}", axis=1)))
-        selected_doc_id = st.selectbox("👨‍⚕️ Chọn bác sĩ:", options=doc_dict.keys(), format_func=lambda x: doc_dict[x])
-        col3, col4 = st.columns(2)
-        with col3:
-            selected_date = st.date_input("📅 Ngày khám:").strftime("%Y-%m-%d")
-        with col4:
-            available_slots = get_available_slots(selected_doc_id, selected_date)
-            if available_slots:
-                selected_time = st.selectbox("⏰ Khung giờ:", options=available_slots)
-            else:
-                st.warning("⚠️ Bác sĩ đã kín lịch trong ngày này!")
-                selected_time = None
-        st.markdown("<br>", unsafe_allow_html=True)
-        if selected_time and st.button("✅ Xác nhận Đặt lịch", key="btn_book"):
-            p_name = st.session_state.get('patient_name', patient_name)
-            success, message, slots = book_appointment(p_name, user['email'], selected_doc_id, selected_date, selected_time)
-            if success:
-                st.success("🎉 " + message)
-                st.balloons()
-            else:
-                st.warning("⚠️ " + message)
+                    st.warning("⚠️ " + message)
+
 
 
 # ===========================================================================

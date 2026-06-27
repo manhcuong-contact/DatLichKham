@@ -89,6 +89,78 @@ def get_doctors(clinic_id, specialty):
 # =============================================================================
 # TASK 1.4: Xử lý logic đặt lịch & Check trùng lịch (Cải tiến gợi ý đa khung giờ)
 # =============================================================================
+def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, user_lon):
+    """
+    1. Lọc tất cả bác sĩ có triệu chứng khớp.
+    2. Loại bỏ những bác sĩ đã bị đặt lịch (Active) vào date và time_slot.
+    3. Ghép với thông tin phòng khám và tính khoảng cách từ (user_lat, user_lon).
+    4. Trả về DataFrame chứa các bác sĩ phù hợp, sắp xếp theo khoảng cách gần nhất.
+    """
+    doctors = pd.read_csv(get_data_path('doctors.csv'))
+    clinics = pd.read_csv(get_data_path('clinics.csv'))
+    appointments = pd.read_csv(get_data_path('appointments.csv'))
+
+    # 1. Tìm các bác sĩ có triệu chứng khớp
+    symptom_text_lower = symptom_text.lower().strip()
+    patient_keywords = [kw.strip() for kw in symptom_text_lower.replace(',', '|').split('|') if kw.strip()]
+    
+    match_counts = []
+    for _, doc_row in doctors.iterrows():
+        doc_symptoms = str(doc_row['symptoms']).lower()
+        count = 0
+        for keyword in patient_keywords:
+            if keyword in doc_symptoms:
+                count += 1
+        match_counts.append(count)
+        
+    doctors['match_count'] = match_counts
+    matched_doctors = doctors[doctors['match_count'] > 0].copy()
+
+    if matched_doctors.empty:
+        return pd.DataFrame()
+
+    # 2. Loại bỏ các bác sĩ đã có lịch hẹn Active vào date và time_slot
+    booked_appointments = appointments[
+        (appointments['date'] == date) &
+        (appointments['time_slot'] == time_slot) &
+        (appointments['status'] == 'Active')
+    ]
+    booked_doctor_ids = booked_appointments['doctor_id'].tolist()
+    available_doctors = matched_doctors[~matched_doctors['id'].isin(booked_doctor_ids)].copy()
+
+    if available_doctors.empty:
+        return pd.DataFrame()
+
+    # 3. Tính khoảng cách và lấy thông tin clinic
+    distances = []
+    clinic_names = []
+    clinic_lats = []
+    clinic_lons = []
+    
+    for _, doc_row in available_doctors.iterrows():
+        clinic_info = clinics[clinics['id'] == doc_row['clinic_id']]
+        if not clinic_info.empty:
+            c_row = clinic_info.iloc[0]
+            dist = math.sqrt((c_row['lat'] - user_lat)**2 + (c_row['lon'] - user_lon)**2)
+            distances.append(dist)
+            clinic_names.append(c_row['name'])
+            clinic_lats.append(c_row['lat'])
+            clinic_lons.append(c_row['lon'])
+        else:
+            distances.append(float('inf'))
+            clinic_names.append("Không xác định")
+            clinic_lats.append(0.0)
+            clinic_lons.append(0.0)
+
+    available_doctors['distance'] = distances
+    available_doctors['clinic_name'] = clinic_names
+    available_doctors['clinic_lat'] = clinic_lats
+    available_doctors['clinic_lon'] = clinic_lons
+
+    # 4. Sắp xếp: Ưu tiên khoảng cách gần nhất, sau đó đến số triệu chứng khớp cao nhất
+    result_df = available_doctors.sort_values(by=['distance', 'match_count'], ascending=[True, False])
+    return result_df
+
 def get_available_slots(doctor_id, date):
     """
     Trả về danh sách các khung giờ còn trống của bác sĩ trong ngày.
