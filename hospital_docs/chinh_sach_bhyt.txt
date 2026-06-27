@@ -4,7 +4,7 @@ CHÍNH SÁCH BẢO HIỂM Y TẾ (BHYT)
 1. ĐỐI TƯỢNG ĐƯỢC HƯỞNG
 - Bệnh nhân có thẻ BHYT còn hiệu lực.
 - Khám đúng tuyến: Được hưởng 80% chi phí khám chữa bệnh.
-- Khám trái tuyến: Được hưởng 40% chi phí (tại bệnh viện tuyến tỉnh), 60% (tại bệnh viện tuyến huyện).
+- Khám trái tuyến: Được hưởng 40% chi phí (tại phòng khám tuyến tỉnh), 60% (tại phòng khám tuyến huyện).
 
 2. THỦ TỤC KHÁM BHYT
 - Bước 1: Xuất trình thẻ BHYT và CMND/CCCD tại quầy tiếp nhận.

@@ -406,8 +406,8 @@ def page_admin_dashboard():
 # TRỢ LÝ AI TỔNG HỢP (UNIFIED AI)
 # ===========================================================================
 def page_unified_ai():
-    st.title("🤖 Trợ lý AI Bệnh viện")
-    st.caption("Hỗ trợ tư vấn triệu chứng, hỏi đáp dịch vụ, bảng giá và thủ tục bệnh viện.")
+    st.title("🤖 Trợ lý AI phòng khám")
+    st.caption("Hỗ trợ tư vấn triệu chứng, hỏi đáp dịch vụ, bảng giá và thủ tục phòng khám.")
     st.markdown("---")
 
     # Hiển thị câu hỏi mẫu
@@ -417,11 +417,11 @@ def page_unified_ai():
     
     # Khởi tạo state
     if 'chat_messages' not in st.session_state:
-        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI của bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"}]
+        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI của phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"}]
     if 'chat_history_gemini' not in st.session_state:
         st.session_state['chat_history_gemini'] = [
             {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
-            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI của bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"]}
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI của phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"]}
         ]
     if 'ai_specialty' not in st.session_state:
         st.session_state['ai_specialty'] = None
@@ -476,10 +476,10 @@ def page_unified_ai():
     # Nút xóa lịch sử bên sidebar
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Xóa lịch sử chat AI", key="btn_clear_chat"):
-        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI Bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"}]
+        st.session_state['chat_messages'] = [{"role": "assistant", "content": "Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"}]
         st.session_state['chat_history_gemini'] = [
             {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
-            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI Bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"]}
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"]}
         ]
         st.session_state['ai_specialty'] = None
         st.rerun()

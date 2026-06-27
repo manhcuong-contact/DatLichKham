@@ -1,72 +1,72 @@
 id,name,address,lat,lon
-C001,Bệnh viện Đa khoa tỉnh An Giang,"Thành phố An Giang, An Giang",10.366,105.438
-C002,Bệnh viện Đa khoa tỉnh Bà Rịa - Vũng Tàu,"Thành phố Bà Rịa - Vũng Tàu, Bà Rịa - Vũng Tàu",10.5417,107.2429
-C003,Bệnh viện Đa khoa tỉnh Bắc Giang,"Thành phố Bắc Giang, Bắc Giang",21.2731,106.1946
-C004,Bệnh viện Đa khoa tỉnh Bắc Kạn,"Thành phố Bắc Kạn, Bắc Kạn",22.140219,105.8349959
-C005,Bệnh viện Đa khoa tỉnh Bạc Liêu,"Thành phố Bạc Liêu, Bạc Liêu",9.2855006,105.723904
-C006,Bệnh viện Đa khoa tỉnh Bắc Ninh,"Thành phố Bắc Ninh, Bắc Ninh",21.1861,106.0763
-C007,Bệnh viện Đa khoa tỉnh Bến Tre,"Thành phố Bến Tre, Bến Tre",10.2373288,106.381315
-C008,Bệnh viện Đa khoa tỉnh Bình Định,"Thành phố Bình Định, Bình Định",13.776,109.2235
-C009,Bệnh viện Đa khoa tỉnh Bình Dương,"Thành phố Bình Dương, Bình Dương",11.3254,106.477
-C010,Bệnh viện Đa khoa tỉnh Bình Phước,"Thành phố Bình Phước, Bình Phước",11.7512,106.7235
-C011,Bệnh viện Đa khoa tỉnh Bình Thuận,"Thành phố Bình Thuận, Bình Thuận",10.9289,108.1021
-C012,Bệnh viện Đa khoa tỉnh Cà Mau,"Thành phố Cà Mau, Cà Mau",9.1762003,105.1508415
-C013,Bệnh viện Đa khoa tỉnh Cao Bằng,"Thành phố Cao Bằng, Cao Bằng",22.665,106.2638
-C014,Bệnh viện Đa khoa tỉnh Đắk Lắk,"Thành phố Đắk Lắk, Đắk Lắk",12.71,108.2378
-C015,Bệnh viện Đa khoa tỉnh Đắk Nông,"Thành phố Đắk Nông, Đắk Nông",12.0046,107.6879
-C016,Bệnh viện Đa khoa tỉnh Điện Biên,"Thành phố Điện Biên, Điện Biên",21.3923593,103.0159895
-C017,Bệnh viện Đa khoa tỉnh Đồng Nai,"Thành phố Đồng Nai, Đồng Nai",10.9452,106.8245
-C018,Bệnh viện Đa khoa tỉnh Đồng Tháp,"Thành phố Đồng Tháp, Đồng Tháp",10.4933,105.6882
-C019,Bệnh viện Đa khoa tỉnh Gia Lai,"Thành phố Gia Lai, Gia Lai",13.9859765,108.0073696
-C020,Bệnh viện Đa khoa tỉnh Hà Giang,"Thành phố Hà Giang, Hà Giang",22.8232,104.9836
-C021,Bệnh viện Đa khoa tỉnh Hà Nam,"Thành phố Hà Nam, Hà Nam",20.5464,105.913
-C022,Bệnh viện Đa khoa tỉnh Hà Tĩnh,"Thành phố Hà Tĩnh, Hà Tĩnh",18.3559,105.8877
-C023,Bệnh viện Đa khoa tỉnh Hải Dương,"Thành phố Hải Dương, Hải Dương",20.9375551,106.3288025
-C024,Bệnh viện Đa khoa tỉnh Hậu Giang,"Thành phố Hậu Giang, Hậu Giang",9.7583,105.6405
-C025,Bệnh viện Đa khoa tỉnh Hòa Bình,"Thành phố Hòa Bình, Hòa Bình",20.8133,105.3383
-C026,Bệnh viện Đa khoa tỉnh Hưng Yên,"Thành phố Hưng Yên, Hưng Yên",20.653,106.051
-C027,Bệnh viện Đa khoa tỉnh Khánh Hòa,"Thành phố Khánh Hòa, Khánh Hòa",12.2388,109.1967
-C028,Bệnh viện Đa khoa tỉnh Kiên Giang,"Thành phố Kiên Giang, Kiên Giang",10.0125,105.0809
-C029,Bệnh viện Đa khoa tỉnh Kon Tum,"Thành phố Kon Tum, Kon Tum",14.349,107.9838
-C030,Bệnh viện Đa khoa tỉnh Lai Châu,"Thành phố Lai Châu, Lai Châu",22.3964,103.4582
-C031,Bệnh viện Đa khoa tỉnh Lâm Đồng,"Thành phố Lâm Đồng, Lâm Đồng",11.9465,108.4419
-C032,Bệnh viện Đa khoa tỉnh Lạng Sơn,"Thành phố Lạng Sơn, Lạng Sơn",21.8462,106.7612
-C033,Bệnh viện Đa khoa tỉnh Lào Cai,"Thành phố Lào Cai, Lào Cai",22.4856,103.9754
-C034,Bệnh viện Đa khoa tỉnh Long An,"Thành phố Long An, Long An",10.6956,106.2431
-C035,Bệnh viện Đa khoa tỉnh Nam Định,"Thành phố Nam Định, Nam Định",20.4251,106.1682
-C036,Bệnh viện Đa khoa tỉnh Nghệ An,"Thành phố Nghệ An, Nghệ An",18.9,105.6761
-C037,Bệnh viện Đa khoa tỉnh Ninh Bình,"Thành phố Ninh Bình, Ninh Bình",20.2580325,105.979824
-C038,Bệnh viện Đa khoa tỉnh Ninh Thuận,"Thành phố Ninh Thuận, Ninh Thuận",11.5647,108.9888
-C039,Bệnh viện Đa khoa tỉnh Phú Thọ,"Thành phố Phú Thọ, Phú Thọ",21.422,105.2284
-C040,Bệnh viện Đa khoa tỉnh Quảng Bình,"Thành phố Quảng Bình, Quảng Bình",17.468,106.622
-C041,Bệnh viện Đa khoa tỉnh Quảng Nam,"Thành phố Quảng Nam, Quảng Nam",15.5394,108.0191
-C042,Bệnh viện Đa khoa tỉnh Quảng Ngãi,"Thành phố Quảng Ngãi, Quảng Ngãi",15.1214,108.8044
-C043,Bệnh viện Đa khoa tỉnh Quảng Ninh,"Thành phố Quảng Ninh, Quảng Ninh",21.0064,107.2925
-C044,Bệnh viện Đa khoa tỉnh Quảng Trị,"Thành phố Quảng Trị, Quảng Trị",16.749,107.1853
-C045,Bệnh viện Đa khoa tỉnh Sóc Trăng,"Thành phố Sóc Trăng, Sóc Trăng",9.6016408,105.9752671
-C046,Bệnh viện Đa khoa tỉnh Sơn La,"Thành phố Sơn La, Sơn La",21.3256,103.9141
-C047,Bệnh viện Đa khoa tỉnh Tây Ninh,"Thành phố Tây Ninh, Tây Ninh",11.31,106.098
-C048,Bệnh viện Đa khoa tỉnh Thái Bình,"Thành phố Thái Bình, Thái Bình",20.4528848,106.340023
-C049,Bệnh viện Đa khoa tỉnh Thái Nguyên,"Thành phố Thái Nguyên, Thái Nguyên",21.5671,105.8252
-C050,Bệnh viện Đa khoa tỉnh Thanh Hóa,"Thành phố Thanh Hóa, Thanh Hóa",19.8077,105.7769
-C051,Bệnh viện Đa khoa tỉnh Thừa Thiên Huế,"Thành phố Thừa Thiên Huế, Thừa Thiên Huế",16.4675,107.5905
-C052,Bệnh viện Đa khoa tỉnh Tiền Giang,"Thành phố Tiền Giang, Tiền Giang",10.4493,106.342
-C053,Bệnh viện Đa khoa tỉnh Trà Vinh,"Thành phố Trà Vinh, Trà Vinh",9.9348,106.3456
-C054,Bệnh viện Đa khoa tỉnh Tuyên Quang,"Thành phố Tuyên Quang, Tuyên Quang",21.8235,105.214
-C055,Bệnh viện Đa khoa tỉnh Vĩnh Long,"Thành phố Vĩnh Long, Vĩnh Long",10.2397,105.9723
-C056,Bệnh viện Đa khoa tỉnh Vĩnh Phúc,"Thành phố Vĩnh Phúc, Vĩnh Phúc",21.3608,105.5474
-C057,Bệnh viện Đa khoa tỉnh Yên Bái,"Thành phố Yên Bái, Yên Bái",21.7051,104.8751
-C058,Bệnh viện Đa khoa tỉnh Phú Yên,"Thành phố Phú Yên, Phú Yên",13.0955,109.2924
-C059,Bệnh viện Đa khoa tỉnh Cần Thơ,"Thành phố Cần Thơ, Cần Thơ",10.0452,105.7469
-C060,Bệnh viện Đa khoa tỉnh Đà Nẵng,"Thành phố Đà Nẵng, Đà Nẵng",16.0544,108.2022
-C061,Bệnh viện Đa khoa tỉnh Hải Phòng,"Thành phố Hải Phòng, Hải Phòng",20.8449,106.6881
-C062,Bệnh viện Bạch Mai,"789 Giải Phóng, Đống Đa, Hà Nội",21.0031568,105.8410062
-C063,Bệnh viện Hữu Nghị Việt Đức,"40 Tràng Thi, Hoàn Kiếm, Hà Nội",21.0274803,105.8468315
-C064,Bệnh viện Trung ương Quân đội 108,"1 Trần Hưng Đạo, Hai Bà Trưng, Hà Nội",21.0164674,105.8608058
-C065,Bệnh viện Phụ sản Trung ương,"43 Tràng Thi, Hoàn Kiếm, Hà Nội",21.0266287,105.8469197
-C066,Bệnh viện Đại học Y Hà Nội,"1 Tôn Thất Tùng, Đống Đa, Hà Nội",21.0022278,105.8313173
-C067,Bệnh viện Chợ Rẫy,"201B Nguyễn Chí Thanh, Quận 5, Hồ Chí Minh",10.7566964,106.6597263
-C068,Bệnh viện Từ Dũ,"284 Cống Quỳnh, Quận 1, Hồ Chí Minh",10.7737261,106.7166008
-C069,Bệnh viện Đại học Y Dược,"215 Hồng Bàng, Quận 5, Hồ Chí Minh",10.7737261,106.7166008
-C070,Bệnh viện Nhi Đồng 1,"341 Sư Vạn Hạnh, Quận 10, Hồ Chí Minh",10.7737261,106.7166008
-C071,Bệnh viện Nhân dân 115,"527 Sư Vạn Hạnh, Quận 10, Hồ Chí Minh",10.7737261,106.7166008
+C001,Phòng khám Đa khoa tỉnh An Giang,"Thành phố An Giang, An Giang",10.366,105.438
+C002,Phòng khám Đa khoa tỉnh Bà Rịa - Vũng Tàu,"Thành phố Bà Rịa - Vũng Tàu, Bà Rịa - Vũng Tàu",10.5417,107.2429
+C003,Phòng khám Đa khoa tỉnh Bắc Giang,"Thành phố Bắc Giang, Bắc Giang",21.2731,106.1946
+C004,Phòng khám Đa khoa tỉnh Bắc Kạn,"Thành phố Bắc Kạn, Bắc Kạn",22.140219,105.8349959
+C005,Phòng khám Đa khoa tỉnh Bạc Liêu,"Thành phố Bạc Liêu, Bạc Liêu",9.2855006,105.723904
+C006,Phòng khám Đa khoa tỉnh Bắc Ninh,"Thành phố Bắc Ninh, Bắc Ninh",21.1861,106.0763
+C007,Phòng khám Đa khoa tỉnh Bến Tre,"Thành phố Bến Tre, Bến Tre",10.2373288,106.381315
+C008,Phòng khám Đa khoa tỉnh Bình Định,"Thành phố Bình Định, Bình Định",13.776,109.2235
+C009,Phòng khám Đa khoa tỉnh Bình Dương,"Thành phố Bình Dương, Bình Dương",11.3254,106.477
+C010,Phòng khám Đa khoa tỉnh Bình Phước,"Thành phố Bình Phước, Bình Phước",11.7512,106.7235
+C011,Phòng khám Đa khoa tỉnh Bình Thuận,"Thành phố Bình Thuận, Bình Thuận",10.9289,108.1021
+C012,Phòng khám Đa khoa tỉnh Cà Mau,"Thành phố Cà Mau, Cà Mau",9.1762003,105.1508415
+C013,Phòng khám Đa khoa tỉnh Cao Bằng,"Thành phố Cao Bằng, Cao Bằng",22.665,106.2638
+C014,Phòng khám Đa khoa tỉnh Đắk Lắk,"Thành phố Đắk Lắk, Đắk Lắk",12.71,108.2378
+C015,Phòng khám Đa khoa tỉnh Đắk Nông,"Thành phố Đắk Nông, Đắk Nông",12.0046,107.6879
+C016,Phòng khám Đa khoa tỉnh Điện Biên,"Thành phố Điện Biên, Điện Biên",21.3923593,103.0159895
+C017,Phòng khám Đa khoa tỉnh Đồng Nai,"Thành phố Đồng Nai, Đồng Nai",10.9452,106.8245
+C018,Phòng khám Đa khoa tỉnh Đồng Tháp,"Thành phố Đồng Tháp, Đồng Tháp",10.4933,105.6882
+C019,Phòng khám Đa khoa tỉnh Gia Lai,"Thành phố Gia Lai, Gia Lai",13.9859765,108.0073696
+C020,Phòng khám Đa khoa tỉnh Hà Giang,"Thành phố Hà Giang, Hà Giang",22.8232,104.9836
+C021,Phòng khám Đa khoa tỉnh Hà Nam,"Thành phố Hà Nam, Hà Nam",20.5464,105.913
+C022,Phòng khám Đa khoa tỉnh Hà Tĩnh,"Thành phố Hà Tĩnh, Hà Tĩnh",18.3559,105.8877
+C023,Phòng khám Đa khoa tỉnh Hải Dương,"Thành phố Hải Dương, Hải Dương",20.9375551,106.3288025
+C024,Phòng khám Đa khoa tỉnh Hậu Giang,"Thành phố Hậu Giang, Hậu Giang",9.7583,105.6405
+C025,Phòng khám Đa khoa tỉnh Hòa Bình,"Thành phố Hòa Bình, Hòa Bình",20.8133,105.3383
+C026,Phòng khám Đa khoa tỉnh Hưng Yên,"Thành phố Hưng Yên, Hưng Yên",20.653,106.051
+C027,Phòng khám Đa khoa tỉnh Khánh Hòa,"Thành phố Khánh Hòa, Khánh Hòa",12.2388,109.1967
+C028,Phòng khám Đa khoa tỉnh Kiên Giang,"Thành phố Kiên Giang, Kiên Giang",10.0125,105.0809
+C029,Phòng khám Đa khoa tỉnh Kon Tum,"Thành phố Kon Tum, Kon Tum",14.349,107.9838
+C030,Phòng khám Đa khoa tỉnh Lai Châu,"Thành phố Lai Châu, Lai Châu",22.3964,103.4582
+C031,Phòng khám Đa khoa tỉnh Lâm Đồng,"Thành phố Lâm Đồng, Lâm Đồng",11.9465,108.4419
+C032,Phòng khám Đa khoa tỉnh Lạng Sơn,"Thành phố Lạng Sơn, Lạng Sơn",21.8462,106.7612
+C033,Phòng khám Đa khoa tỉnh Lào Cai,"Thành phố Lào Cai, Lào Cai",22.4856,103.9754
+C034,Phòng khám Đa khoa tỉnh Long An,"Thành phố Long An, Long An",10.6956,106.2431
+C035,Phòng khám Đa khoa tỉnh Nam Định,"Thành phố Nam Định, Nam Định",20.4251,106.1682
+C036,Phòng khám Đa khoa tỉnh Nghệ An,"Thành phố Nghệ An, Nghệ An",18.9,105.6761
+C037,Phòng khám Đa khoa tỉnh Ninh Bình,"Thành phố Ninh Bình, Ninh Bình",20.2580325,105.979824
+C038,Phòng khám Đa khoa tỉnh Ninh Thuận,"Thành phố Ninh Thuận, Ninh Thuận",11.5647,108.9888
+C039,Phòng khám Đa khoa tỉnh Phú Thọ,"Thành phố Phú Thọ, Phú Thọ",21.422,105.2284
+C040,Phòng khám Đa khoa tỉnh Quảng Bình,"Thành phố Quảng Bình, Quảng Bình",17.468,106.622
+C041,Phòng khám Đa khoa tỉnh Quảng Nam,"Thành phố Quảng Nam, Quảng Nam",15.5394,108.0191
+C042,Phòng khám Đa khoa tỉnh Quảng Ngãi,"Thành phố Quảng Ngãi, Quảng Ngãi",15.1214,108.8044
+C043,Phòng khám Đa khoa tỉnh Quảng Ninh,"Thành phố Quảng Ninh, Quảng Ninh",21.0064,107.2925
+C044,Phòng khám Đa khoa tỉnh Quảng Trị,"Thành phố Quảng Trị, Quảng Trị",16.749,107.1853
+C045,Phòng khám Đa khoa tỉnh Sóc Trăng,"Thành phố Sóc Trăng, Sóc Trăng",9.6016408,105.9752671
+C046,Phòng khám Đa khoa tỉnh Sơn La,"Thành phố Sơn La, Sơn La",21.3256,103.9141
+C047,Phòng khám Đa khoa tỉnh Tây Ninh,"Thành phố Tây Ninh, Tây Ninh",11.31,106.098
+C048,Phòng khám Đa khoa tỉnh Thái Bình,"Thành phố Thái Bình, Thái Bình",20.4528848,106.340023
+C049,Phòng khám Đa khoa tỉnh Thái Nguyên,"Thành phố Thái Nguyên, Thái Nguyên",21.5671,105.8252
+C050,Phòng khám Đa khoa tỉnh Thanh Hóa,"Thành phố Thanh Hóa, Thanh Hóa",19.8077,105.7769
+C051,Phòng khám Đa khoa tỉnh Thừa Thiên Huế,"Thành phố Thừa Thiên Huế, Thừa Thiên Huế",16.4675,107.5905
+C052,Phòng khám Đa khoa tỉnh Tiền Giang,"Thành phố Tiền Giang, Tiền Giang",10.4493,106.342
+C053,Phòng khám Đa khoa tỉnh Trà Vinh,"Thành phố Trà Vinh, Trà Vinh",9.9348,106.3456
+C054,Phòng khám Đa khoa tỉnh Tuyên Quang,"Thành phố Tuyên Quang, Tuyên Quang",21.8235,105.214
+C055,Phòng khám Đa khoa tỉnh Vĩnh Long,"Thành phố Vĩnh Long, Vĩnh Long",10.2397,105.9723
+C056,Phòng khám Đa khoa tỉnh Vĩnh Phúc,"Thành phố Vĩnh Phúc, Vĩnh Phúc",21.3608,105.5474
+C057,Phòng khám Đa khoa tỉnh Yên Bái,"Thành phố Yên Bái, Yên Bái",21.7051,104.8751
+C058,Phòng khám Đa khoa tỉnh Phú Yên,"Thành phố Phú Yên, Phú Yên",13.0955,109.2924
+C059,Phòng khám Đa khoa tỉnh Cần Thơ,"Thành phố Cần Thơ, Cần Thơ",10.0452,105.7469
+C060,Phòng khám Đa khoa tỉnh Đà Nẵng,"Thành phố Đà Nẵng, Đà Nẵng",16.0544,108.2022
+C061,Phòng khám Đa khoa tỉnh Hải Phòng,"Thành phố Hải Phòng, Hải Phòng",20.8449,106.6881
+C062,Phòng khám Đa khoa Bạch Mai,"789 Giải Phóng, Đống Đa, Hà Nội",21.0031568,105.8410062
+C063,Phòng khám Y khoa Việt Đức,"40 Tràng Thi, Hoàn Kiếm, Hà Nội",21.0274803,105.8468315
+C064,Phòng khám Đa khoa 108,"1 Trần Hưng Đạo, Hai Bà Trưng, Hà Nội",21.0164674,105.8608058
+C065,Phòng khám Phụ sản Trung ương,"43 Tràng Thi, Hoàn Kiếm, Hà Nội",21.0266287,105.8469197
+C066,Phòng khám Đại học Y Hà Nội,"1 Tôn Thất Tùng, Đống Đa, Hà Nội",21.0022278,105.8313173
+C067,Phòng khám Đa khoa Chợ Rẫy,"201B Nguyễn Chí Thanh, Quận 5, Hồ Chí Minh",10.7566964,106.6597263
+C068,Phòng khám Sản Phụ khoa Từ Dũ,"284 Cống Quỳnh, Quận 1, Hồ Chí Minh",10.7737261,106.7166008
+C069,Phòng khám Đại học Y Dược,"215 Hồng Bàng, Quận 5, Hồ Chí Minh",10.7737261,106.7166008
+C070,Phòng khám Nhi Đồng 1,"341 Sư Vạn Hạnh, Quận 10, Hồ Chí Minh",10.7737261,106.7166008
+C071,Phòng khám Đa khoa 115,"527 Sư Vạn Hạnh, Quận 10, Hồ Chí Minh",10.7737261,106.7166008

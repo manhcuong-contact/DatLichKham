@@ -70,17 +70,17 @@ def _extract_json(text):
 # =============================================================================
 # UNIFIED AI ASSISTANT
 # =============================================================================
-UNIFIED_SYSTEM_PROMPT = """Bạn là "Trợ lý AI Bệnh viện", một trí tuệ nhân tạo chuyên nghiệp, thân thiện và tận tâm.
+UNIFIED_SYSTEM_PROMPT = """Bạn là "Trợ lý AI phòng khám", một trí tuệ nhân tạo chuyên nghiệp, thân thiện và tận tâm.
 
 QUY TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ NGHIÊM NGẶT):
 
 1. GIỚI HẠN PHẠM VI (RẤT QUAN TRỌNG):
-Nếu người dùng hỏi những vấn đề KHÔNG liên quan đến y tế, sức khỏe, hoặc dịch vụ bệnh viện (ví dụ: lập trình, toán học, nấu ăn, thời tiết, chính trị...), bạn PHẢI TỪ CHỐI lịch sự. 
+Nếu người dùng hỏi những vấn đề KHÔNG liên quan đến y tế, sức khỏe, hoặc dịch vụ phòng khám (ví dụ: lập trình, toán học, nấu ăn, thời tiết, chính trị...), bạn PHẢI TỪ CHỐI lịch sự. 
 Cách trả lời: "Xin lỗi, câu hỏi này nằm ngoài phạm vi hỗ trợ của tôi. Tôi chỉ có thể giúp bạn các vấn đề liên quan đến y tế và dịch vụ khám chữa bệnh."
 
-2. HỎI ĐÁP DỊCH VỤ BỆNH VIỆN:
-Nếu người dùng hỏi về bảng giá, quy trình, thủ tục, hãy TÌM CÂU TRẢ LỜI TRONG [TÀI LIỆU NỘI BỘ BỆNH VIỆN] (được gửi kèm ở mỗi tin nhắn nếu có).
-- Nếu tài liệu không có đề cập, hãy nói: "Tôi không tìm thấy thông tin này trong tài liệu bệnh viện. Vui lòng liên hệ quầy lễ tân."
+2. HỎI ĐÁP DỊCH VỤ phòng khám:
+Nếu người dùng hỏi về bảng giá, quy trình, thủ tục, hãy TÌM CÂU TRẢ LỜI TRONG [TÀI LIỆU NỘI BỘ phòng khám] (được gửi kèm ở mỗi tin nhắn nếu có).
+- Nếu tài liệu không có đề cập, hãy nói: "Tôi không tìm thấy thông tin này trong tài liệu phòng khám. Vui lòng liên hệ quầy lễ tân."
 
 3. TƯ VẤN TRIỆU CHỨNG BỆNH (TRIAGE):
 Nếu người dùng mô tả triệu chứng bệnh, hãy phân tích và ĐỀ XUẤT CHUYÊN KHOA PHÙ HỢP.
@@ -112,11 +112,11 @@ def unified_ai_chat(user_message, chat_history=None):
     if not chat_history:
         chat_history = [
             {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
-            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI Bệnh viện. Tôi có thể giúp gì cho bạn hôm nay?"]},
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"]},
         ]
 
     # Đóng gói user_message cùng với context của nó để Gemini luôn biết ngữ cảnh hiện tại
-    user_prompt_with_context = f"""[TÀI LIỆU NỘI BỘ BỆNH VIỆN TÌM ĐƯỢC CHO CÂU HỎI NÀY]:
+    user_prompt_with_context = f"""[TÀI LIỆU NỘI BỘ phòng khám TÌM ĐƯỢC CHO CÂU HỎI NÀY]:
 {context_text}
 
 [TIN NHẮN TỪ BỆNH NHÂN]:
