@@ -14,21 +14,28 @@ ALL_TIME_SLOTS = [
     "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"
 ]
 
-import pytz
+try:
+    from zoneinfo import ZoneInfo
+    _VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
+except ImportError:
+    import pytz
+    _VN_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
+
 def get_future_time_slots(selected_date_str):
     """
     Lọc các khung giờ còn khả dụng trong tương lai so với thời gian thực tế hiện tại.
+    - Ngày tương lai: Trả về toàn bộ ALL_TIME_SLOTS.
+    - Ngày trong quá khứ: Trả về danh sách rỗng.
+    - Ngày hôm nay: Chỉ trả về các slot từ thời gian hiện tại + 30 phút trở đi.
     """
-    vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-    now = datetime.now(vn_tz)
+    now = datetime.now(_VN_TZ)
     current_date_str = now.strftime("%Y-%m-%d")
-    
+
     if selected_date_str > current_date_str:
         return ALL_TIME_SLOTS
     elif selected_date_str < current_date_str:
         return []
     else:
-        # Nếu là ngày hôm nay, chỉ lấy các slot từ giờ hiện tại + 30 phút trở đi
         now_minutes = now.hour * 60 + now.minute
         valid_slots = []
         for slot in ALL_TIME_SLOTS:
