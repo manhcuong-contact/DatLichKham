@@ -108,7 +108,9 @@ def find_available_doctors_and_clinics(symptom_text, date, time_slot, user_lat, 
 
     # 1. Lọc phòng khám theo tỉnh
     if booking_province and booking_province != "Chưa có dữ liệu":
-        clinics = clinics[clinics['address'].str.contains(booking_province, case=False, na=False)]
+        # Chuẩn hóa tên tỉnh bằng cách bỏ tiền tố "Thành phố " hoặc "Tỉnh "
+        clean_province = booking_province.replace("Thành phố ", "").replace("Tỉnh ", "").strip()
+        clinics = clinics[clinics['address'].str.contains(clean_province, case=False, na=False)]
     
     if clinics.empty:
         return pd.DataFrame()
