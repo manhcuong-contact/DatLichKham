@@ -100,12 +100,23 @@ def unified_ai_chat(user_message, chat_history=None):
     if relevant_chunks:
         context_text = "\n\n---\n\n".join([f"[Nguồn: {c['source']}]\n{c['chunk']}" for c in relevant_chunks])
 
-    # Khởi tạo history nếu chưa có (dành riêng cho định dạng REST API của Gemini)
+    # Khởi tạo history nếu chưa có
     if not chat_history:
         chat_history = [
             {"role": "user", "parts": [{"text": UNIFIED_SYSTEM_PROMPT}]},
             {"role": "model", "parts": [{"text": "Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"}]}
         ]
+
+    # Normalize chat history to strict REST format
+    formatted_history = []
+    for msg in chat_history:
+        formatted_parts = []
+        for part in msg.get("parts", []):
+            if isinstance(part, str):
+                formatted_parts.append({"text": part})
+            elif isinstance(part, dict) and "text" in part:
+                formatted_parts.append(part)
+        formatted_history.append({"role": msg["role"], "parts": formatted_parts})
 
     # Đóng gói user_message cùng với context
     user_prompt_with_context = f"""[TÀI LIỆU NỘI BỘ phòng khám TÌM ĐƯỢC CHO CÂU HỎI NÀY]:
@@ -117,7 +128,7 @@ def unified_ai_chat(user_message, chat_history=None):
 
     # Tạo request payload
     payload = {
-        "contents": chat_history + [
+        "contents": formatted_history + [
             {"role": "user", "parts": [{"text": user_prompt_with_context}]}
         ]
     }
