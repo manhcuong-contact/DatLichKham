@@ -258,7 +258,7 @@ def page_booking():
             # Bản đồ
             st.markdown("#### 🗺️ Bản đồ các phòng khám phù hợp")
             u_lat, u_lon = st.session_state['user_coords']
-            m = folium.Map(location=[u_lat, u_lon], zoom_start=13, tiles="CartoDB dark_matter")
+            m = folium.Map(location=[u_lat, u_lon], zoom_start=13, tiles="CartoDB positron")
             folium.Marker(location=[u_lat, u_lon], popup="🏠 Nhà của bạn", tooltip="Vị trí của bạn", icon=folium.Icon(color='red', icon='home', prefix='fa')).add_to(m)
             
             # Đánh dấu các phòng khám trong kết quả (có thể có nhiều bác sĩ cùng phòng khám, dùng set để lọc trùng)
