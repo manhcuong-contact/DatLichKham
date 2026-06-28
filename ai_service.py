@@ -143,4 +143,7 @@ def unified_ai_chat(user_message, chat_history=None):
         return ai_text, parsed_json
 
     except Exception as e:
-        return f"❌ Lỗi kết nối AI: {str(e)}", None
+        error_msg = str(e)
+        if "429" in error_msg or "quota" in error_msg.lower():
+            return "⏳ AI đang quá tải do có nhiều người sử dụng. Bạn vui lòng đợi khoảng 1 phút rồi hỏi lại nhé!", None
+        return f"❌ Lỗi kết nối AI: {error_msg}", None
