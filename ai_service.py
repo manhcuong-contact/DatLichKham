@@ -1,12 +1,19 @@
 import os
 import json
-import requests
+import google.generativeai as genai
 
 # =============================================================================
 # CẤU HÌNH GEMINI API
 # =============================================================================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+
+def _get_model():
+    """Khởi tạo model Gemini."""
+    if not GEMINI_API_KEY:
+        return None
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-flash-latest')
+    return model
 
 # =============================================================================
 # RAG NỘI BỘ
@@ -89,7 +96,8 @@ def unified_ai_chat(user_message, chat_history=None):
     """
     Xử lý chung toàn bộ logic RAG và Triage qua một kênh hội thoại duy nhất.
     """
-    if not GEMINI_API_KEY:
+    model = _get_model()
+    if model is None:
         return "⚠️ Chưa cấu hình API Key Gemini. Vui lòng liên hệ quản trị viên.", None
 
     # Lấy tài liệu RAG tương ứng với câu hỏi
@@ -100,25 +108,14 @@ def unified_ai_chat(user_message, chat_history=None):
     if relevant_chunks:
         context_text = "\n\n---\n\n".join([f"[Nguồn: {c['source']}]\n{c['chunk']}" for c in relevant_chunks])
 
-    # Khởi tạo history nếu chưa có
+    # Thiết lập history nếu chưa có
     if not chat_history:
         chat_history = [
-            {"role": "user", "parts": [{"text": UNIFIED_SYSTEM_PROMPT}]},
-            {"role": "model", "parts": [{"text": "Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"}]}
+            {"role": "user", "parts": [UNIFIED_SYSTEM_PROMPT]},
+            {"role": "model", "parts": ["Xin chào! Tôi là Trợ lý AI phòng khám. Tôi có thể giúp gì cho bạn hôm nay?"]},
         ]
 
-    # Normalize chat history to strict REST format
-    formatted_history = []
-    for msg in chat_history:
-        formatted_parts = []
-        for part in msg.get("parts", []):
-            if isinstance(part, str):
-                formatted_parts.append({"text": part})
-            elif isinstance(part, dict) and "text" in part:
-                formatted_parts.append(part)
-        formatted_history.append({"role": msg["role"], "parts": formatted_parts})
-
-    # Đóng gói user_message cùng với context
+    # Đóng gói user_message cùng với context của nó để Gemini luôn biết ngữ cảnh hiện tại
     user_prompt_with_context = f"""[TÀI LIỆU NỘI BỘ phòng khám TÌM ĐƯỢC CHO CÂU HỎI NÀY]:
 {context_text}
 
@@ -126,30 +123,10 @@ def unified_ai_chat(user_message, chat_history=None):
 {user_message}
 """
 
-    # Tạo request payload
-    payload = {
-        "contents": formatted_history + [
-            {"role": "user", "parts": [{"text": user_prompt_with_context}]}
-        ]
-    }
-    
-    url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
-    
     try:
-        # Giới hạn thời gian kết nối là 15 giây để tránh treo UI
-        resp = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=15)
-        
-        if resp.status_code == 429:
-            return "⚠️ Hệ thống AI đang quá tải (Hết hạn ngạch miễn phí). Vui lòng thử lại sau ít phút.", None
-        elif resp.status_code != 200:
-            return f"❌ Lỗi từ server AI ({resp.status_code}): {resp.text}", None
-            
-        data = resp.json()
-        
-        try:
-            ai_text = data['candidates'][0]['content']['parts'][0]['text']
-        except (KeyError, IndexError):
-            return "❌ AI không phản hồi đúng định dạng.", None
+        chat = model.start_chat(history=chat_history)
+        response = chat.send_message(user_prompt_with_context)
+        ai_text = response.text
 
         # Trích xuất JSON (nếu có)
         parsed_json = _extract_json(ai_text)
@@ -165,7 +142,5 @@ def unified_ai_chat(user_message, chat_history=None):
 
         return ai_text, parsed_json
 
-    except requests.exceptions.Timeout:
-        return "⏳ AI phản hồi quá lâu. Vui lòng thử lại sau.", None
     except Exception as e:
         return f"❌ Lỗi kết nối AI: {str(e)}", None
