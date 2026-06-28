@@ -14,6 +14,19 @@ from location_service import get_vn_locations
 from auth import register_user, login_user
 from geo_service import address_to_coords
 from ai_service import unified_ai_chat, UNIFIED_SYSTEM_PROMPT
+from reminder_service import check_and_send_reminders
+from apscheduler.schedulers.background import BackgroundScheduler
+
+@st.cache_resource
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    # Chạy mỗi 5 phút
+    scheduler.add_job(check_and_send_reminders, 'interval', minutes=5)
+    scheduler.start()
+    return scheduler
+
+# Khởi động scheduler
+start_scheduler()
 
 # ===========================================================================
 # CẤU HÌNH TRANG
